@@ -97,13 +97,14 @@ class Spinbox(tk.Spinbox):
                                                        ("focus",))
         tk.Spinbox.__init__(self, self.frame, **kwargs)
         tk.Spinbox.pack(self, padx=1, pady=1)
+        self.frame.spinbox = self
 
         self.bind_class("ttkSpinbox", "<FocusIn>", self.focusin, True)
         self.bind_class("ttkSpinbox", "<FocusOut>", self.focusout, True)
 
     @staticmethod
     def focusout(event):
-        w = event.widget.children["!spinbox"]
+        w = event.widget.spinbox
         bc = w.style.lookup("TEntry", "bordercolor", ("!focus",))
         dc = w.style.lookup("TEntry", "darkcolor", ("!focus",))
         lc = w.style.lookup("TEntry", "lightcolor", ("!focus",))
@@ -112,7 +113,7 @@ class Spinbox(tk.Spinbox):
 
     @staticmethod
     def focusin(event):
-        w = event.widget.children["!spinbox"]
+        w = event.widget.spinbox
         w.old_value = w.get()
         bc = w.style.lookup("TEntry", "bordercolor", ("focus",))
         dc = w.style.lookup("TEntry", "darkcolor", ("focus",))
@@ -362,6 +363,7 @@ class ColorPicker(tk.Toplevel):
         style = Style(self)
         style.map("palette.TFrame", relief=[('focus', 'sunken')],
                   bordercolor=[('focus', "#4D4D4D")])
+        self.configure(background=style.lookup("TFrame",  "background"))
 
         if isinstance(color, str):
             if re.match(r"^#[0-9A-F]{6}$", color):
@@ -714,6 +716,6 @@ def askcolor(color="red", parent=None, title=_("Color Chooser")):
 if __name__ == "__main__":
     root = tk.Tk()
     s = Style(root)
-    s.theme_use('clam')
+#    s.theme_use('clam')
     print(askcolor("sky blue", parent=root))
     root.mainloop()
