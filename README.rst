@@ -33,11 +33,11 @@ Display the color picker dialog and return the selected color in
 rgb and html format. An empty tuple is returned if the color 
 selection is cancelled.
 
-* color: initially selected color 
-         accepted format: 
-            - RGB (0-255 values)
-            - HTML (6-digits)
-            - tkinter color names (see http://wiki.tcl.tk/37701 for a list)
+* color: initially selected color
+     accepted format: 
+        - RGB (0-255 values)
+        - HTML (6-digits)
+        - tkinter color names (see http://wiki.tcl.tk/37701 for a list)
 * parent: parent window
 * title: title of the color picker dialog
 
