@@ -24,6 +24,22 @@ With pip:
     $ pip install tkColorPicker
 
 
+Documentation
+-------------
+
+askcolor(color="red", parent=None, title=_("Color Chooser")):
+
+    Display the color picker dialog and return the selected color in 
+    rgb and html format. An empty tuple is returned if the color 
+    selection is cancelled.
+    
+    * color: initially selected color 
+             accepted format: 
+                - RGB (0-255 values)
+                - HTML (6-digits)
+                - tkinter color names (see http://wiki.tcl.tk/37701 for a list)
+    * parent: parent window
+    * title: title of the color picker dialog
 
 Example
 =======
@@ -38,7 +54,7 @@ Example
     style = ttk.Style(root)
     style.theme_use('clam')
 
-    print(askcolor(root, (255, 255, 0)))
+    print(askcolor((255, 255, 0), root))
     root.mainloop()
 
 
