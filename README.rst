@@ -42,7 +42,7 @@ askcolor(color="red", parent=None, title=_("Color Chooser")):
     * title: title of the color picker dialog
 
 Example
-=======
+-------
 
 .. code:: python
 
