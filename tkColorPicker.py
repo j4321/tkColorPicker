@@ -710,12 +710,12 @@ def askcolor(color="red", parent=None, title=_("Color Chooser")):
     if res:
         return res[0], res[2]
     else:
-        return ()
+        return (None, None)
 
 
 if __name__ == "__main__":
     root = tk.Tk()
     s = Style(root)
-#    s.theme_use('clam')
+    s.theme_use('clam')
     print(askcolor("sky blue", parent=root))
     root.mainloop()
