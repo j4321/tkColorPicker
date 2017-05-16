@@ -355,7 +355,6 @@ class ColorPicker(tk.Toplevel):
 
         self.title(title)
         self.transient(self.master)
-        self.grab_set()
         self.resizable(False, False)
         self.lift()
 
@@ -518,6 +517,9 @@ class ColorPicker(tk.Toplevel):
         s_v.bind('<Return>', self._update_color_hsv)
         self.html.bind("<FocusOut>", self._update_color_html)
         self.html.bind("<Return>", self._update_color_html)
+      
+        self.wait_visibility(self)
+        self.grab_set()
 
     def get_color(self):
         return self.color
