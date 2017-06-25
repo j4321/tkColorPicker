@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 tkColorPicker - Alternative to colorchooser for Tkinter
 Copyright 2017 Juliette Monsel <j_4321@protonmail.com>
@@ -18,9 +19,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Main
 """
 
+### TODO: find a way to boost color display in python2 (try with PIL)
 
-import tkinter as tk
-from tkinter.ttk import Entry, Button, Label, Frame, Style
+from time import time
+try:
+    import tkinter as tk
+    from tkinter.ttk import Entry, Button, Label, Frame, Style
+except ImportError:
+    import Tkinter as tk
+    from ttk import Entry, Button, Label, Frame, Style
+from builtins import round
+
+# in some old python versions round returns a float instead of an int
+if not isinstance(round(1.0), int):
+    from builtins import round as float_round
+
+    def round(nb):
+        return int(float_round(nb))
+
 import re
 from math import atan2, sqrt, pi
 import colorsys
@@ -47,11 +63,11 @@ PALETTE = ("red", "dark red", "orange", "yellow", "green", "lightgreen", "blue",
 
 ### conversion functions
 def rgb_to_hsv(r, g, b):
-    h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+    h, s, v = colorsys.rgb_to_hsv(r/255., g/255., b/255.)
     return round(h*360), round(s*100), round(v*100)
 
 def hsv_to_rgb(h, s, v):
-    r, g, b = colorsys.hsv_to_rgb(h/360, s/100, v/100)
+    r, g, b = colorsys.hsv_to_rgb(h/360., s/100., v/100.)
     return round(r*255), round(g*255), round(b*255)
 
 def rgb_to_html(r, g, b):
@@ -99,6 +115,37 @@ class Spinbox(tk.Spinbox):
         tk.Spinbox.pack(self, padx=1, pady=1)
         self.frame.spinbox = self
 
+        # pack/place/grid methods
+        self.pack = self.frame.pack
+        self.pack_slaves = self.frame.pack_slaves
+        self.pack_propagate = self.frame.pack_propagate
+        self.pack_configure = self.frame.pack_configure
+        self.pack_info = self.frame.pack_info
+        self.pack_forget = self.frame.pack_forget
+
+        self.grid = self.frame.grid
+        self.grid_slaves = self.frame.grid_slaves
+        self.grid_size = self.frame.grid_size
+        self.grid_rowconfigure = self.frame.grid_rowconfigure
+        self.grid_remove = self.frame.grid_remove
+        self.grid_propagate = self.frame.grid_propagate
+        self.grid_info = self.frame.grid_info
+        self.grid_location = self.frame.grid_location
+        self.grid_columnconfigure = self.frame.grid_columnconfigure
+        self.grid_configure = self.frame.grid_configure
+        self.grid_forget = self.frame.grid_forget
+        self.grid_bbox = self.frame.grid_bbox
+        try:
+            self.grid_anchor = self.frame.grid_anchor
+        except AttributeError:
+            pass
+
+        self.place = self.frame.place
+        self.place_configure = self.frame.place_configure
+        self.place_forget = self.frame.place_forget
+        self.place_info = self.frame.place_info
+        self.place_slaves = self.frame.place_slaves
+
         self.bind_class("ttkSpinbox", "<FocusIn>", self.focusin, True)
         self.bind_class("ttkSpinbox", "<FocusOut>", self.focusout, True)
 
@@ -121,44 +168,6 @@ class Spinbox(tk.Spinbox):
         w.style.configure("%s.spinbox.TFrame" % event.widget, bordercolor=bc,
                           darkcolor=dc, lightcolor=lc)
 
-    def pack(self, **kwargs):
-        self.frame.pack(**kwargs)
-
-    def pack_configure(self, **kwargs):
-        self.frame.pack_configure(**kwargs)
-
-    def pack_info(self):
-        return self.frame.pack_info()
-
-    def pack_forget(self):
-        self.frame.pack_forget()
-
-    def grid(self, **kwargs):
-        self.frame.grid(**kwargs)
-
-    def grid_configure(self, **kwargs):
-        self.frame.grid_configure(**kwargs)
-
-    def grid_info(self):
-        return self.frame.grid_info()
-
-    def grid_bbox(self, *args, **kwargs):
-        return self.frame.grid_bbox(*args, **kwargs)
-
-    def grid_forget(self):
-        self.frame.grid_forget()
-
-    def place(self, **kwargs):
-        self.frame.place(**kwargs)
-
-    def place_configure(self, **kwargs):
-        self.frame.place_configure(**kwargs)
-
-    def place_info(self):
-        return self.frame.pack_info()
-
-    def place_forget(self):
-        self.frame.place_forget()
 
 
 class ColorSquare(tk.Canvas):
@@ -174,7 +183,7 @@ class ColorSquare(tk.Canvas):
         """
         tk.Canvas.__init__(self, parent, height=height, width=width, **kwargs)
         self.bg = tk.PhotoImage(width=width, height=height, master=self)
-        self.hue = hue
+        self._hue = hue
         if not color:
             color = hue2col(hue)
         self.bind('<Configure>', lambda e: self._draw(color))
@@ -182,22 +191,26 @@ class ColorSquare(tk.Canvas):
         self.bind('<B1-Motion>', self._on_move)
 
     def _fill(self):
-        r, g, b = hue2col(self.hue)
-        width = self.winfo_width() - 1
-        height = self.winfo_height() - 1
+        tps = time()
+        r, g, b = hue2col(self._hue)
+        width = self.winfo_width()
+        height = self.winfo_height()
+        h = float(height - 1)
+        w = float(width - 1)
         if height:
-            c = [(r + i/height*(255-r), g + i/height*(255-g), b + i/height*(255-b)) for i in range(height + 1)]
+            c = [(r + i/h*(255-r), g + i/h*(255-g), b + i/h*(255-b)) for i in range(height)]
             data = []
-            for i in range(height + 1):
+            for i in range(height):
                 line = []
-                for j in range(width + 1):
-                    rij = round(j/width*c[i][0])
-                    gij = round(j/width*c[i][1])
-                    bij = round(j/width*c[i][2])
+                for j in range(width):
+                    rij = round(j/w*c[i][0])
+                    gij = round(j/w*c[i][1])
+                    bij = round(j/w*c[i][2])
                     color = rgb_to_html(rij,gij,bij)
                     line.append(color)
                 data.append("{" + " ".join(line) + "}")
             self.bg.put(" ".join(data))
+        print(time() - tps)
 
     def _draw(self, color):
         width = self.winfo_width()
@@ -211,25 +224,25 @@ class ColorSquare(tk.Canvas):
         self.create_image(0, 0, image=self.bg, anchor="nw", tags="bg")
         self.tag_lower("bg")
         h, s, v = color
-        x = v/100
-        y = (1 - s/100)
+        x = v/100.
+        y = (1 - s/100.)
         self.create_line(0, y*height, width, y*height, tags="cross_h",
                          fill="#C2C2C2")
         self.create_line(x*width, 0, x*width, height, tags="cross_v",
                          fill="#C2C2C2")
 
-    def __setattr__(self, name, value):
-        if name == "hue":
-            try:
-                old = self.hue
-            except AttributeError:
-                old = None
-            object.__setattr__(self, name, value)
-            if old != value:
-                self._fill()
-        else:
-            object.__setattr__(self, name, value)
+    def get_hue(self):
+        return self._hue
 
+    def set_hue(self, value):
+        old = self._hue
+        self._hue = value
+        if value != old:
+            #del(self.bg)
+            #self.bg = tk.PhotoImage(width=width, height=height, master=self)
+            self._fill()
+            #self.create_image(0, 0, image=self.bg, anchor="nw", tags="bg")
+            #self.tag_lower("bg")
 
     def _on_click(self, event):
         x = event.x
@@ -253,9 +266,9 @@ class ColorSquare(tk.Canvas):
         yp = min(y, self.bg.height()-1)
         r, g, b = self.bg.get(round(xp), round(yp))
         html = rgb_to_html(r, g, b)
-        h = self.hue
-        s = round((1 - y/self.winfo_height())*100)
-        v = round(100*x/self.winfo_width())
+        h = self.get_hue()
+        s = round((1 - float(y)/self.winfo_height())*100)
+        v = round(100*float(x)/self.winfo_width())
         return (r, g, b), (h, s, v), html
 
     def set_rgb(self, sel_color):
@@ -263,9 +276,9 @@ class ColorSquare(tk.Canvas):
         width = self.winfo_width()
         height = self.winfo_height()
         h, s, v = rgb_to_hsv(*sel_color)
-        self.hue = h
-        x = v/100
-        y = (1 - s/100)
+        self.set_hue(h)
+        x = v/100.
+        y = (1 - s/100.)
         self.coords('cross_h', 0, y*height, width, y*height)
         self.coords('cross_v', x*width, 0, x*width, height)
 
@@ -274,9 +287,9 @@ class ColorSquare(tk.Canvas):
         width = self.winfo_width()
         height = self.winfo_height()
         h, s, v = sel_color
-        self.hue = h
-        x = v/100
-        y = (1 - s/100)
+        self.set_hue(h)
+        x = v/100.
+        y = (1 - s/100.)
         self.coords('cross_h', 0, y*height, width, y*height)
         self.coords('cross_v', x*width, 0, x*width, height)
 
@@ -310,14 +323,14 @@ class GradientBar(tk.Canvas):
 
         line = []
         for i in range(width):
-            line.append(rgb_to_html(*hue2col(i/width*360)))
+            line.append(rgb_to_html(*hue2col(float(i)/width*360)))
         line = "{" + " ".join(line) + "}"
         self.gradient.put(" ".join([line for j in range(height)]))
         self.create_image(0, 0, anchor="nw", tags="gardient",
                           image=self.gradient)
         self.lower("gradient")
 
-        x = hue/360*width
+        x = hue/360.*width
         self.create_line(x, 0, x, height, width=2, tags='cursor')
 
     def _on_click(self, event):
@@ -342,7 +355,7 @@ class GradientBar(tk.Canvas):
 
     def set(self, hue):
         """ set cursor position on the color corresponding to the hue value """
-        x = hue/360*self.winfo_width()
+        x = hue/360.*self.winfo_width()
         self.coords('cursor', x, 0, x, self.winfo_height())
 
 
@@ -517,8 +530,8 @@ class ColorPicker(tk.Toplevel):
         s_v.bind('<Return>', self._update_color_hsv)
         self.html.bind("<FocusOut>", self._update_color_html)
         self.html.bind("<Return>", self._update_color_html)
-      
-        self.wait_visibility(self)
+
+        self.wait_visibility()
         self.grab_set()
 
     def get_color(self):
@@ -628,7 +641,7 @@ class ColorPicker(tk.Toplevel):
     def _change_color(self, event):
         """ respond to motion of the hsv cursor """
         h = self.bar.get()
-        self.square.hue = h
+        self.square.set_hue(h)
         (r, g, b), (h, s, v), sel_color = self.square.get()
         self.color_preview.configure(background=sel_color)
         self.red.set(r)
@@ -712,7 +725,7 @@ def askcolor(color="red", parent=None, title=_("Color Chooser")):
     if res:
         return res[0], res[2]
     else:
-        return (None, None)
+        return ()
 
 
 if __name__ == "__main__":
