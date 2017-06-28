@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Main
 """
 
-### TODO: find a way to boost color display in python2 (try with PIL)
+### TODO: find a way to boost color display in python2 (try with PIL?)
 
 from time import time
 try:
@@ -28,14 +28,19 @@ try:
 except ImportError:
     import Tkinter as tk
     from ttk import Entry, Button, Label, Frame, Style
-from builtins import round
+#from builtins import round2
 
-# in some old python versions round returns a float instead of an int
+#in some old python versions round2 returns a float instead of an int
 if not isinstance(round(1.0), int):
-    from builtins import round as float_round
+    def round2(nb):
+        return int(nb + 0.5)  # works because nb >= 0
+else:
+    round2 = round
 
-    def round(nb):
-        return int(float_round(nb))
+        
+from sys import version_info
+if version_info[0] == 2:
+    range = xrange
 
 import re
 from math import atan2, sqrt, pi
@@ -64,11 +69,11 @@ PALETTE = ("red", "dark red", "orange", "yellow", "green", "lightgreen", "blue",
 ### conversion functions
 def rgb_to_hsv(r, g, b):
     h, s, v = colorsys.rgb_to_hsv(r/255., g/255., b/255.)
-    return round(h*360), round(s*100), round(v*100)
+    return round2(h*360), round2(s*100), round2(v*100)
 
 def hsv_to_rgb(h, s, v):
     r, g, b = colorsys.hsv_to_rgb(h/360., s/100., v/100.)
-    return round(r*255), round(g*255), round(b*255)
+    return round2(r*255), round2(g*255), round2(b*255)
 
 def rgb_to_html(r, g, b):
    return ("#%2.2x%2.2x%2.2x" % (r, g, b)).upper()
@@ -80,7 +85,7 @@ def html_to_rgb(color):
     return r, g, b
 
 def col2hue(r, g, b):
-    return round(180/pi*atan2(sqrt(3)*(g - b), 2*r - g - b) + 360) % 360
+    return round2(180/pi*atan2(sqrt(3)*(g - b), 2*r - g - b) + 360) % 360
 
 def hue2col(h):
     if h < 0 or h > 360:
@@ -198,19 +203,20 @@ class ColorSquare(tk.Canvas):
         h = float(height - 1)
         w = float(width - 1)
         if height:
-            c = [(r + i/h*(255-r), g + i/h*(255-g), b + i/h*(255-b)) for i in range(height)]
+            c = [(r + i/h*(255 - r), g + i/h*(255 - g), b + i/h*(255 - b)) for i in range(height)]
             data = []
+            t = 0
             for i in range(height):
                 line = []
                 for j in range(width):
-                    rij = round(j/w*c[i][0])
-                    gij = round(j/w*c[i][1])
-                    bij = round(j/w*c[i][2])
-                    color = rgb_to_html(rij,gij,bij)
+                    rij = round2(j/w*c[i][0])
+                    gij = round2(j/w*c[i][1])
+                    bij = round2(j/w*c[i][2])
+                    color = rgb_to_html(rij, gij, bij)
                     line.append(color)
                 data.append("{" + " ".join(line) + "}")
             self.bg.put(" ".join(data))
-        print(time() - tps)
+            print(time() - tps)
 
     def _draw(self, color):
         width = self.winfo_width()
@@ -264,11 +270,11 @@ class ColorSquare(tk.Canvas):
         y = self.coords('cross_h')[1]
         xp = min(x, self.bg.width()-1)
         yp = min(y, self.bg.height()-1)
-        r, g, b = self.bg.get(round(xp), round(yp))
+        r, g, b = self.bg.get(round2(xp), round2(yp))
         html = rgb_to_html(r, g, b)
         h = self.get_hue()
-        s = round((1 - float(y)/self.winfo_height())*100)
-        v = round(100*float(x)/self.winfo_width())
+        s = round2((1 - float(y)/self.winfo_height())*100)
+        v = round2(100*float(x)/self.winfo_width())
         return (r, g, b), (h, s, v), html
 
     def set_rgb(self, sel_color):
@@ -351,7 +357,7 @@ class GradientBar(tk.Canvas):
     def get(self):
         """ return hue of color under cursor """
         coords = self.coords('cursor')
-        return round(360*coords[0]/self.winfo_width())
+        return round2(360*coords[0]/self.winfo_width())
 
     def set(self, hue):
         """ set cursor position on the color corresponding to the hue value """
@@ -383,7 +389,7 @@ class ColorPicker(tk.Toplevel):
                 old_color = color
             else:
                 col = self.winfo_rgb(color)
-                self.old_color = tuple(round(c*255/65535) for c in col)
+                self.old_color = tuple(round2(c*255/65535) for c in col)
                 old_color = rgb_to_html(*self.old_color)
         else:
             self.old_color = color
@@ -609,9 +615,9 @@ class ColorPicker(tk.Toplevel):
         label.master.focus_set()
         label.master.configure(relief="sunken")
         r, g, b = self.winfo_rgb(label.cget("background"))
-        r = round(r*255/65535)
-        g = round(g*255/65535)
-        b = round(b*255/65535)
+        r = round2(r*255/65535)
+        g = round2(g*255/65535)
+        b = round2(b*255/65535)
         color = rgb_to_html(r, g, b)
         h, s, v = rgb_to_hsv(r, g, b)
         self.color_preview.configure(background=color)
