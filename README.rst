@@ -11,7 +11,7 @@ Requirements
 ------------
 
 - Linux, Windows, Mac
-- Python 3 with tkinter + ttk (default for Windows but not for Linux)
+- Python 2.7 or 3.x with tkinter + ttk (default for Windows but not for Linux)
 
 
 Installation

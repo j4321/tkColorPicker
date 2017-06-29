@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='tkColorPicker',
-    version='1.0.0',
+    version='1.0.1',
     description='Color picker dialog for Tkinter',
     long_description=long_description,
     url='https://github.com/j4321/tkColorPicker',
@@ -27,6 +27,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 2.7',
         'Natural Language :: English',
         'Natural Language :: French',
         'Operating System :: OS Independent',
