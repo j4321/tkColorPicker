@@ -219,7 +219,6 @@ class ColorSquare(tk.Canvas):
 
     def _fill(self):
         """Create the gradient."""
-        tps = time()
         r, g, b = hue2col(self._hue)
         width = self.winfo_width()
         height = self.winfo_height()
@@ -238,7 +237,6 @@ class ColorSquare(tk.Canvas):
                     line.append(color)
                 data.append("{" + " ".join(line) + "}")
             self.bg.put(" ".join(data))
-            print(time() - tps)
 
     def _draw(self, color):
         """Draw the gradient and the selection cross on the canvas."""
@@ -404,7 +402,6 @@ class ColorPicker(tk.Toplevel):
         self.title(title)
         self.transient(self.master)
         self.resizable(False, False)
-        self.lift()
 
         self.color = ""
         style = Style(self)
@@ -568,6 +565,7 @@ class ColorPicker(tk.Toplevel):
         self.html.bind("<Return>", self._update_color_html)
 
         self.wait_visibility()
+        self.lift()
         self.grab_set()
 
     def get_color(self):
