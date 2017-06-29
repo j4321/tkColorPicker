@@ -777,7 +777,7 @@ def askcolor(color="red", parent=None, title=_("Color Chooser")):
     if res:
         return res[0], res[2]
     else:
-        return ()
+        return (None, None)
 
 
 if __name__ == "__main__":
