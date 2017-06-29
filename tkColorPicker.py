@@ -291,7 +291,11 @@ class ColorSquare(tk.Canvas):
         y = self.coords('cross_h')[1]
         xp = min(x, self.bg.width() - 1)
         yp = min(y, self.bg.height() - 1)
-        r, g, b = self.bg.get(round2(xp), round2(yp))
+        try:
+            r, g, b = self.bg.get(round2(xp), round2(yp))
+        except ValueError:
+            r, g, b = self.bg.get(round2(xp), round2(yp)).split()
+            r, g, b = int(r), int(g), int(b)
         html = rgb_to_html(r, g, b)
         h = self.get_hue()
         s = round2((1 - float(y) / self.winfo_height()) * 100)
