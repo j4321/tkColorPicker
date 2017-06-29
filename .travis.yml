@@ -3,7 +3,7 @@ dist: trusty
 sudo: required
 python:
   - "2.7"
-  - "3.5"
+  - "3.4"
 virtualenv:
     system_site_packages: true
 before_install:
@@ -13,12 +13,9 @@ before_install:
 install:
   - sudo apt-get install python-tk python3-tk
   - python -m pip install coverage codecov
-  - python3 -m pip install coverage codecov
 script:
   - python -m pip install .
-  - python3 -m pip install .
   - python -m nose
-  - python3 -m nose
 after_success:
   - coverage run nosetests
   - codecov
