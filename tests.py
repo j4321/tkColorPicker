@@ -152,6 +152,7 @@ class TestColorPicker(BaseWidgetTest):
     def test_colorpicker_bindings(self):
         cp = tkc.ColorPicker(self.window, color="sky blue", title='Test')
         self.window.update()
+        self.window.wait_visibility(cp)
         cp.bar.event_generate("<ButtonRelease-1>", x=10, y=20)
         self.window.update()
         cp.bar.event_generate("<Button-1>", x=10, y=20)
@@ -168,6 +169,7 @@ class TestColorPicker(BaseWidgetTest):
     def test_colorpicker_functions(self):
         cp = tkc.ColorPicker(self.window, color="sky blue", title='Test')
         self.window.update()
+        self.window.wait_visibility(cp)
         cp._update_color_rgb()
         self.window.update()
         cp._update_color_hsv()

@@ -11,11 +11,14 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3
 install:
-  - sudo apt-get install python-tk
+  - sudo apt-get install python-tk python3-tk
   - python -m pip install coverage codecov
+  - python3 -m pip install coverage codecov
 script:
   - python -m pip install .
+  - python3 -m pip install .
   - python -m nose
+  - python3 -m nose
 after_success:
   - coverage run nosetests
   - codecov
