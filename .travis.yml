@@ -14,6 +14,7 @@ install:
   - sudo apt-get install python-tk python3-tk
   - python -m pip install coverage codecov
 script:
+  - python --version
   - python -m pip install .
   - python -m nose
 after_success:
