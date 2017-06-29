@@ -376,12 +376,6 @@ class GradientBar(tk.Canvas):
         x = min(max(event.x, 0), w)
         self.coords('cursor', x, 0, x, self.winfo_height())
 
-    def get_color(self):
-        """Return color under cursor."""
-        coords = self.coords('cursor')
-        i = min(self.find_overlapping(*coords))
-        return self.itemcget(i, 'fill')
-
     def get(self):
         """Return hue of color under cursor."""
         coords = self.coords('cursor')
