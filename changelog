@@ -5,7 +5,7 @@ Copyright 2016-2017 Juliette Monsel <j_4321@protonmail.com>
 Changelog
 ---------
 
-- tkcolorpicker 1.0.1
+- tkcolorpicker 2.0.0
     * Make package name lowercase to follow PEP 8 guidelines
     * Add python 2.7 compatibility
     * Make askcolor return (None, None) instead of ()

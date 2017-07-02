@@ -761,8 +761,8 @@ def askcolor(color="red", parent=None, title=_("Color Chooser")):
     """
     Open a ColorPicker dialog and return the chosen color.
 
-    The selected color is retunred in RGB and hexadecimal formats. An empty
-    tuple is returned if selection is cancelled.
+    The selected color is retunred in RGB and hexadecimal formats.
+    (None, None) is returned if the color selection is cancelled.
 
     Arguments:
         * color: initially selected color (RGB, html or tkinter color name)

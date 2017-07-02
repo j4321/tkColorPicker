@@ -30,7 +30,7 @@ Documentation
 askcolor(color="red", parent=None, title=_("Color Chooser")):
 
     Display the color picker dialog and return the selected color in
-    rgb and html format. An empty tuple is returned if the color
+    rgb and html format. (None, None) is returned if the color
     selection is cancelled.
 
     * color: initially selected color,
