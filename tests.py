@@ -24,7 +24,7 @@ try:
     import Tkinter as tk
 except ImportError:
     import tkinter as tk
-import tkColorPicker as tkc
+import tkcolorpicker as tkc
 
 
 class TestFunctions(unittest.TestCase):

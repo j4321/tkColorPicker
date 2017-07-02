@@ -21,8 +21,6 @@ Main
 
 ### TODO: find a way to boost color display (try with PIL?)
 
-from time import time
-from sys import version_info
 try:
     import tkinter as tk
     from tkinter.ttk import Entry, Button, Label, Frame, Style
@@ -35,16 +33,13 @@ import colorsys
 from locale import getdefaultlocale
 
 
-# in some old python versions round2 returns a float instead of an int
+# in some python versions round returns a float instead of an int
 if not isinstance(round(1.0), int):
     def round2(nb):
         """Round number to 0 digits and return an int."""
         return int(nb + 0.5)  # works because nb >= 0
 else:
     round2 = round
-
-if version_info[0] == 2:
-    range = xrange
 
 # Translation
 EN = {}
@@ -64,6 +59,7 @@ PALETTE = ("red", "dark red", "orange", "yellow", "green", "lightgreen", "blue",
 
 
 def _(text):
+    """Translate text."""
     return TR.get(text, text)
 
 

@@ -9,7 +9,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='tkColorPicker',
+    name='tkcolorpicker',
     version='1.0.1',
     description='Color picker dialog for Tkinter',
     long_description=long_description,
@@ -33,6 +33,6 @@ setup(
         'Operating System :: OS Independent',
     ],
     keywords=['tkinter', 'color', 'colorchooser'],
-    py_modules=["tkColorPicker"],
+    py_modules=["tkcolorpicker"],
 
 )
