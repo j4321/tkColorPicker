@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Main
 """
 
-### TODO: find a way to boost color display (try with PIL?)
+# --- TODO: find a way to boost color display (try with PIL?)
 
 try:
     import tkinter as tk
@@ -63,7 +63,7 @@ def _(text):
     return TR.get(text, text)
 
 
-### conversion functions
+# --- conversion functions
 def rgb_to_hsv(r, g, b):
     """Convert RGB color to HSV."""
     h, s, v = colorsys.rgb_to_hsv(r / 255., g / 255., b / 255.)
@@ -102,7 +102,7 @@ def hue2col(h):
         return hsv_to_rgb(h, 100, 100)
 
 
-### classes
+# --- classes
 class Spinbox(tk.Spinbox):
     """Spinbox closer to ttk look (designed to be used with clam)."""
 
@@ -241,7 +241,7 @@ class ColorSquare(tk.Canvas):
         self.delete("bg")
         self.delete("cross_h")
         self.delete("cross_v")
-        del(self.bg)
+        del self.bg
         self.bg = tk.PhotoImage(width=width, height=height, master=self)
         self._fill()
         self.create_image(0, 0, image=self.bg, anchor="nw", tags="bg")
@@ -345,7 +345,7 @@ class GradientBar(tk.Canvas):
         """Draw the gradient and put the cursor on hue."""
         self.delete("gradient")
         self.delete("cursor")
-        del(self.gradient)
+        del self.gradient
         width = self.winfo_width()
         height = self.winfo_height()
 
@@ -436,7 +436,7 @@ class ColorPicker(tk.Toplevel):
         frame.columnconfigure(1, weight=1)
         frame.rowconfigure(0, weight=1)
 
-        ### color preview: initial color and currently selected color side by side
+        # --- color preview: initial color and currently selected color side by side
         preview_frame = Frame(frame, relief="groove", borderwidth=2)
         preview_frame.grid(row=0, column=0, sticky="sw")
         l = tk.Label(preview_frame, background=old_color, width=5,
@@ -446,7 +446,7 @@ class ColorPicker(tk.Toplevel):
         self.color_preview = tk.Label(preview_frame, background=old_color,
                                       width=5, height=2, highlightthickness=0)
         self.color_preview.grid(row=0, column=1)
-        ### palette
+        # --- palette
         palette = Frame(frame)
         palette.grid(row=0, column=1, sticky="e")
         for i, col in enumerate(PALETTE):
@@ -459,7 +459,7 @@ class ColorPicker(tk.Toplevel):
             f.grid(row=i % 2, column=i // 2, padx=2, pady=2)
 
         col_frame = Frame(self)
-        ### hsv
+        # --- hsv
         hsv_frame = Frame(col_frame, relief="ridge", borderwidth=2)
         hsv_frame.pack(pady=(0, 4), fill="x")
         hsv_frame.columnconfigure(0, weight=1)
@@ -491,7 +491,7 @@ class ColorPicker(tk.Toplevel):
         Label(hsv_frame, text=_('Value')).grid(row=2, column=0, sticky='e',
                                                padx=4, pady=4)
 
-        ### rgb
+        # --- rgb
         rgb_frame = Frame(col_frame, relief="ridge", borderwidth=2)
         rgb_frame.pack(pady=6, fill="x")
         rgb_frame.columnconfigure(0, weight=1)
@@ -521,7 +521,7 @@ class ColorPicker(tk.Toplevel):
         Label(rgb_frame, text=_('Blue')).grid(row=2, column=0, sticky='e',
                                               padx=4, pady=4)
 
-        ### html
+        # --- html
         html_frame = Frame(col_frame)
         html_frame.pack(pady=(6, 0), fill="x")
         self.html = Entry(html_frame, justify="center", width=10)
@@ -529,21 +529,21 @@ class ColorPicker(tk.Toplevel):
         Label(html_frame, text="HTML").pack(side="left", padx=4, pady=4)
         self.html.pack(side="left", padx=4, pady=4)
 
-        ### validation
+        # --- validation
         button_frame = Frame(self)
         Button(button_frame, text="Ok",
                command=self.ok).pack(side="right", padx=10)
         Button(button_frame, text=_("Cancel"),
                command=self.destroy).pack(side="right", padx=10)
 
-        ### placement
+        # --- placement
         bar.grid(row=0, column=0, padx=10, pady=(10, 2))
         square.grid(row=1, column=0, padx=10, pady=2)
         frame.grid(row=2, column=0, columnspan=2, pady=(4, 10), padx=10, sticky="ew")
         col_frame.grid(row=0, rowspan=2, column=1, padx=(4, 10), pady=(10, 4))
         button_frame.grid(row=3, columnspan=2, pady=(0, 10), padx=10)
 
-        ### bindings
+        # --- bindings
         self.bar.bind("<ButtonRelease-1>", self._change_color, True)
         self.bar.bind("<Button-1>", self._unfocus, True)
         self.square.bind("<Button-1>", self._unfocus, True)
@@ -775,7 +775,7 @@ def askcolor(color="red", parent=None, title=_("Color Chooser")):
     if res:
         return res[0], res[2]
     else:
-        return (None, None)
+        return None, None
 
 
 if __name__ == "__main__":
