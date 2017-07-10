@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Main
 """
 
-# --- TODO: find a way to boost color display (try with PIL?)
+# TODO find a way to boost color display (try with PIL?)
 
 try:
     import tkinter as tk
@@ -28,9 +28,12 @@ except ImportError:
     import Tkinter as tk
     from ttk import Entry, Button, Label, Frame, Style
 import re
+import os
+from PIL import Image, ImageDraw
 from math import atan2, sqrt, pi
 import colorsys
 from locale import getdefaultlocale
+import tempfile
 
 
 # in some python versions round returns a float instead of an int
@@ -41,7 +44,41 @@ if not isinstance(round(1.0), int):
 else:
     round2 = round
 
-# Translation
+
+def create_checkered_image(width, height, c1=(154, 154, 154, 255),
+                           c2=(100, 100, 100, 255), s=8):
+    """
+    Return a checkered image of size width x height.
+
+    Arguments:
+        * width: image width
+        * height: image height
+        * c1: first color (RGBA)
+        * c2: second color (RGBA)
+        * s: size of the squares
+    """
+    im = Image.new("RGBA", (width, height), c1)
+    draw = ImageDraw.Draw(im, "RGBA")
+    for i in range(s, width, 2 * s):
+        for j in range(0, height, 2 * s):
+            draw.rectangle(((i, j), ((i + s - 1, j + s - 1))), fill=c2)
+    for i in range(0, width, 2 * s):
+        for j in range(s, height, 2 * s):
+            draw.rectangle(((i, j), ((i + s - 1, j + s - 1))), fill=c2)
+    return im
+
+
+def overlay(image, color, file):
+    """
+    Overlay a rectangle of color (RGBA) on the image and save to file.
+    """
+    width, height = image.size
+    im = Image.new("RGBA", (width, height), color)
+    preview = Image.alpha_composite(image, im)
+    preview.save(file)
+
+
+# --- Translation
 EN = {}
 FR = {"Red": "Rouge", "Green": "Vert", "Blue": "Bleu",
       "Hue": "Teinte", "Saturation": "Saturation", "Value": "Valeur",
@@ -423,12 +460,15 @@ class ColorPicker(tk.Toplevel):
         self.configure(background=style.lookup("TFrame", "background"))
 
         if isinstance(color, str):
-            if re.match(r"^#[0-9A-F]{8}$", color):
+            if re.match(r"^#[0-9A-F]{8}$", color.upper()):
                 col = hexa_to_rgb(color)
                 self.old_color = col[:3]
-                self._old_alpha = col[3]
-                old_color = color
-            elif re.match(r"^#[0-9A-F]{6}$", color):
+                if alpha:
+                    self._old_alpha = col[3]
+                    old_color = color
+                else:
+                    old_color = color[:7]
+            elif re.match(r"^#[0-9A-F]{6}$", color.upper()):
                 self.old_color = hexa_to_rgb(color)
                 old_color = color
                 if alpha:
@@ -443,11 +483,13 @@ class ColorPicker(tk.Toplevel):
                 old_color = rgb_to_hexa(*args)
         else:
             self.old_color = color[:3]
-            if alpha and len(color) < 4:
-                color += (255,)
-                self._old_alpha = 255
-            else:
-                self._old_alpha = color[3]
+            if alpha:
+                if len(color) < 4:
+                    color += (255,)
+                    self._old_alpha = 255
+                else:
+                    self._old_alpha = color[3]
+            old_color = rgb_to_hexa(*color)
 
         hue = col2hue(*self.old_color)
         bar = Frame(self, borderwidth=2, relief='groove')
@@ -467,13 +509,24 @@ class ColorPicker(tk.Toplevel):
         # --- color preview: initial color and currently selected color side by side
         preview_frame = Frame(frame, relief="groove", borderwidth=2)
         preview_frame.grid(row=0, column=0, sticky="nw", pady=2)
-        l = tk.Label(preview_frame, background=old_color[:7], width=5,
-                     highlightthickness=0, height=2)
-        l.bind("<1>", self._reset_preview)
-        l.grid(row=0, column=0)
-        self.color_preview = tk.Label(preview_frame, background=old_color[:7],
-                                      width=5, height=2, highlightthickness=0)
+        if alpha:
+            self._prev_old_color = tempfile.mkstemp(suffix=".png")[1]
+            self._prev_color = tempfile.mkstemp(suffix=".png")[1]
+            old_color_prev = tk.Label(preview_frame, padx=0, pady=0,
+                                      borderwidth=0, highlightthickness=0)
+            self.color_preview = tk.Label(preview_frame, pady=0, padx=0,
+                                          borderwidth=0, highlightthickness=0)
+        else:
+            old_color_prev = tk.Label(preview_frame, background=old_color[:7],
+                                      width=5, highlightthickness=0, height=2,
+                                      padx=0, pady=0)
+            self.color_preview = tk.Label(preview_frame, width=5, height=2,
+                                          pady=0, background=old_color[:7],
+                                          padx=0, highlightthickness=0)
+        old_color_prev.bind("<1>", self._reset_preview)
+        old_color_prev.grid(row=0, column=0)
         self.color_preview.grid(row=0, column=1)
+
         # --- palette
         palette = Frame(frame)
         palette.grid(row=0, column=1, sticky="ne")
@@ -606,12 +659,24 @@ class ColorPicker(tk.Toplevel):
         if alpha:
             s_alpha.bind('<Return>', self._update_alpha)
             s_alpha.bind('<FocusOut>', self._update_alpha)
+            self.color_preview.bind("<Destroy>", self._cleanup)
         self.hexa.bind("<FocusOut>", self._update_color_hexa)
         self.hexa.bind("<Return>", self._update_color_hexa)
 
         self.wait_visibility()
         self.lift()
         self.grab_set()
+        if alpha:
+            self.wait_visibility(old_color_prev)
+            self._transparent_bg = create_checkered_image(42, 32)
+            overlay(self._transparent_bg, hexa_to_rgb(old_color),
+                    self._prev_old_color)
+            self._im_old_color = tk.PhotoImage(master=self,
+                                               file=self._prev_old_color)
+            self._im_color = tk.PhotoImage(master=self,
+                                           file=self._prev_old_color)
+            old_color_prev.configure(image=self._im_old_color)
+            self.color_preview.configure(image=self._im_color)
 
     def get_color(self):
         """Return selected color, return an empty string if no color is selected."""
@@ -695,24 +760,32 @@ class ColorPicker(tk.Toplevel):
             string_var.set(0)
             return 0
 
+    def _update_preview(self):
+        """Update color preview."""
+        color = self.hexa.get()
+        if self.alpha_channel:
+            overlay(self._transparent_bg, hexa_to_rgb(color),
+                    self._prev_color)
+            self._im_color = tk.PhotoImage(master=self,
+                                           file=self._prev_color)
+            self.color_preview.configure(image=self._im_color)
+        else:
+            self.color_preview.configure(background=color)
+
     def _reset_preview(self, event):
         """Respond to user click on a palette item."""
         label = event.widget
         label.master.focus_set()
         label.master.configure(relief="sunken")
-        r, g, b = self.winfo_rgb(label.cget("background"))
-        r = round2(r * 255 / 65535)
-        g = round2(g * 255 / 65535)
-        b = round2(b * 255 / 65535)
-        args = (r, g, b)
+        args = self.old_color
         if self.alpha_channel:
             args += (self._old_alpha,)
+            self.alpha.set(self._old_alpha)
         color = rgb_to_hexa(*args)
-        h, s, v = rgb_to_hsv(r, g, b)
-        self.color_preview.configure(background=color[:7])
-        self.red.set(r)
-        self.green.set(g)
-        self.blue.set(b)
+        h, s, v = rgb_to_hsv(*self.old_color)
+        self.red.set(self.old_color[0])
+        self.green.set(self.old_color[1])
+        self.blue.set(self.old_color[2])
         self.hue.set(h)
         self.saturation.set(s)
         self.value.set(v)
@@ -720,6 +793,7 @@ class ColorPicker(tk.Toplevel):
         self.hexa.insert(0, color.upper())
         self.bar.set(h)
         self.square.set_hsv((h, s, v))
+        self._update_preview()
 
     def _palette_cmd(self, event):
         """Respond to user click on a palette item."""
@@ -736,7 +810,6 @@ class ColorPicker(tk.Toplevel):
             args += (a,)
         color = rgb_to_hexa(*args)
         h, s, v = rgb_to_hsv(r, g, b)
-        self.color_preview.configure(background=color[:7])
         self.red.set(r)
         self.green.set(g)
         self.blue.set(b)
@@ -747,11 +820,11 @@ class ColorPicker(tk.Toplevel):
         self.hexa.insert(0, color.upper())
         self.bar.set(h)
         self.square.set_hsv((h, s, v))
+        self._update_preview()
 
     def _change_sel_color(self, event):
         """Respond to motion of the color selection cross."""
         (r, g, b), (h, s, v), color = self.square.get()
-        self.color_preview.configure(background=color)
         self.red.set(r)
         self.green.set(g)
         self.blue.set(b)
@@ -762,13 +835,13 @@ class ColorPicker(tk.Toplevel):
         if self.alpha_channel:
             self.hexa.insert('end',
                              ("%2.2x" % self.get_color_value(self.alpha)).upper())
+        self._update_preview()
 
     def _change_color(self, event):
         """Respond to motion of the hsv cursor."""
         h = self.bar.get()
         self.square.set_hue(h)
         (r, g, b), (h, s, v), sel_color = self.square.get()
-        self.color_preview.configure(background=sel_color)
         self.red.set(r)
         self.green.set(g)
         self.blue.set(b)
@@ -780,6 +853,7 @@ class ColorPicker(tk.Toplevel):
         if self.alpha_channel:
             self.hexa.insert('end',
                              ("%2.2x" % self.get_color_value(self.alpha)).upper())
+        self._update_preview()
 
     def _update_color_hexa(self, event=None):
         """Update display after a change in the HEX entry."""
@@ -795,7 +869,6 @@ class ColorPicker(tk.Toplevel):
             self.value.set(v)
             self.bar.set(h)
             self.square.set_hsv((h, s, v))
-            self.color_preview.configure(background=color)
             if self.alpha_channel:
                 self.alpha.set(255)
                 self.hexa.insert('end', 'FF')
@@ -811,9 +884,9 @@ class ColorPicker(tk.Toplevel):
             self.value.set(v)
             self.bar.set(h)
             self.square.set_hsv((h, s, v))
-            self.color_preview.configure(background=color[:7])
         else:
             self._update_color_rgb()
+        self._update_preview()
 
     def _update_alpha(self, event=None):
         """Update display after a change in the alpha spinboxe."""
@@ -821,6 +894,7 @@ class ColorPicker(tk.Toplevel):
         hexa = hexa[:7] + ("%2.2x" % self.get_color_value(self.alpha)).upper()
         self.hexa.delete(0, 'end')
         self.hexa.insert(0, hexa)
+        self._update_preview()
 
     def _update_color_hsv(self, event=None):
         """Update display after a change in the HSV spinboxes."""
@@ -839,7 +913,7 @@ class ColorPicker(tk.Toplevel):
             self.hexa.insert(0, hexa)
             self.square.set_hsv((h, s, v))
             self.bar.set(h)
-            self.color_preview.configure(background=hexa[:7])
+            self._update_preview()
 
     def _update_color_rgb(self, event=None):
         """Update display after a change in the RGB spinboxes."""
@@ -859,7 +933,16 @@ class ColorPicker(tk.Toplevel):
             self.hexa.insert(0, hexa)
             self.square.set_hsv((h, s, v))
             self.bar.set(h)
-            self.color_preview.configure(background=hexa[:7])
+            self._update_preview()
+
+    def _cleanup(self, event):
+        """Delete temporary files."""
+        try:
+            os.remove(self._prev_color)
+            os.remove(self._prev_old_color)
+            print("cleanup")
+        except Exception:
+            pass
 
     def ok(self):
         rgb, hsv, hexa = self.square.get()

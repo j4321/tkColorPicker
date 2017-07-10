@@ -25,6 +25,8 @@ try:
 except ImportError:
     import tkinter as tk
 import tkcolorpicker as tkc
+import tempfile
+import os
 
 
 class TestFunctions(unittest.TestCase):
@@ -40,15 +42,27 @@ class TestFunctions(unittest.TestCase):
 
     def test_rgb_to_hexa(self):
         self.assertEqual(tkc.rgb_to_hexa(255, 255, 255), "#FFFFFF")
+        self.assertEqual(tkc.rgb_to_hexa(255, 255, 255, 255), "#FFFFFFFF")
 
     def test_hexa_to_rgb(self):
         self.assertEqual(tkc.hexa_to_rgb("#FFFFFF"), (255, 255, 255))
+        self.assertEqual(tkc.hexa_to_rgb("#FFFFFFFF"), (255, 255, 255, 255))
 
     def test_hue2col(self):
         self.assertEqual(tkc.hue2col(0), (255, 0, 0))
 
     def test_col2hue(self):
         self.assertEqual(tkc.col2hue(255, 0, 0), 0)
+
+    def test_create_checkered_image(self):
+        tkc.create_checkered_image(100, 100, (155, 120, 10, 255),
+                                   (0, 0, 0, 255), s=8)
+
+    def test_overlay(self):
+        tmp = tempfile.mkstemp(suffix=".png")[1]
+        im = tkc.create_checkered_image(200, 200)
+        tkc.overlay(im, (255, 0, 0, 100), tmp)
+        os.remove(tmp)
 
 
 class BaseWidgetTest(unittest.TestCase):
@@ -149,7 +163,35 @@ class TestGradientBar(BaseWidgetTest):
 
 class TestColorPicker(BaseWidgetTest):
     def test_colorpicker_init(self):
-        tkc.ColorPicker(self.window, color="sky blue", title='Test')
+        c = tkc.ColorPicker(self.window, color="sky blue", title='Test')
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="pink", title='Test', alpha=True)
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="#ff0000", title='Test')
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="#00ff00", title='Test', alpha=True)
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="#00ff00cc", title='Test', alpha=True)
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="#00ff00cc", title='Test')
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color=(255, 0, 0), title='Test')
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color=(255, 0, 0), title='Test',
+                            alpha=True)
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color=(255, 0, 0, 100), title='Test',
+                            alpha=True)
+        c = tkc.ColorPicker(self.window, color=(255, 0, 0, 100), title='Test')
+        c.destroy()
         self.window.update()
 
     def test_colorpicker_bindings(self):
