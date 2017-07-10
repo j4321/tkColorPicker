@@ -128,6 +128,41 @@ class TestColorSquare(BaseWidgetTest):
         self.window.update()
 
 
+class TestAlphaBar(BaseWidgetTest):
+    def test_alphabar_init(self):
+        ab = tkc.AlphaBar(self.window, alpha=200, color=(255, 255, 2),
+                          height=12, width=200)
+        ab.pack()
+        self.window.update()
+
+    def test_alphabar_bindings(self):
+        ab = tkc.AlphaBar(self.window, alpha=20, height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab.event_generate('<1>', x=10, y=50)
+        self.window.update()
+        ab.event_generate('<B1-Motion>', x=20, y=50)
+        self.window.update()
+        ab.event_generate('<Configure>')
+        self.window.update()
+
+    def test_alphabar_functions(self):
+        ab = tkc.AlphaBar(self.window, alpha=20, height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab._draw_gradient(60, (255, 255, 0))
+        self.window.update()
+        self.assertEqual(ab.get(), 60)
+        self.window.update()
+        ab.set(40)
+        self.window.update()
+        self.assertEqual(ab.get(), 40)
+        ab.set_color((0, 0, 0))
+        self.window.update()
+        ab._update_alpha()
+        self.window.update()
+
+
 class TestGradientBar(BaseWidgetTest):
     def test_gradientbar_init(self):
         gb = tkc.GradientBar(self.window, hue=20, height=12, width=200)
@@ -156,6 +191,8 @@ class TestGradientBar(BaseWidgetTest):
         gb.set(40)
         self.window.update()
         self.assertEqual(gb.get(), 40)
+        gb._update_hue()
+        self.window.update()
 
 
 class TestColorPicker(BaseWidgetTest):

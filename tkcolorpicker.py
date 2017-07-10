@@ -28,7 +28,6 @@ except ImportError:
     import Tkinter as tk
     from ttk import Entry, Button, Label, Frame, Style
 import re
-import os
 from PIL import Image, ImageDraw, ImageTk
 from math import atan2, sqrt, pi
 import colorsys
@@ -366,19 +365,142 @@ class ColorSquare(tk.Canvas):
         self.coords('cross_v', x * width, 0, x * width, height)
 
 
+class AlphaBar(tk.Canvas):
+    """Bar to select alpha value."""
+
+    def __init__(self, parent, alpha=255, color=(255, 0, 0), height=10,
+                 width=256, variable=None, **kwargs):
+        """
+        Create a bar to select the alpha value.
+
+        Keyword arguments:
+            * parent: parent window
+            * alpha: initially selected alpha value
+            * color: gradient color
+            * variable: IntVar linked to the alpha value
+            * height, width, and any keyword argument accepted by a tkinter Canvas
+        """
+        tk.Canvas.__init__(self, parent, width=width, height=height, **kwargs)
+        self.gradient = tk.PhotoImage(master=self, width=width, height=height)
+
+        self._variable = variable
+        if variable is not None:
+            try:
+                alpha = int(variable.get())
+            except Exception:
+                pass
+        else:
+            self._variable = tk.IntVar(self)
+        if alpha > 255:
+            alpha = 255
+        elif alpha < 0:
+            alpha = 0
+        self._variable.set(alpha)
+        try:
+            self._variable.trace_add("write", self._update_alpha)
+        except Exception:
+            self._variable.trace("w", self._update_alpha)
+
+        self.bind('<Configure>', lambda e: self._draw_gradient(alpha, color))
+        self.bind('<ButtonPress-1>', self._on_click)
+        self.bind('<B1-Motion>', self._on_move)
+
+    def _draw_gradient(self, alpha, color):
+        """Draw the gradient and put the cursor on hue."""
+        self.delete("gradient")
+        self.delete("cursor")
+        del self.gradient
+        width = self.winfo_width()
+        height = self.winfo_height()
+
+        bg = create_checkered_image(width, height)
+        r, g, b = color
+        w = width - 1.
+        gradient = Image.new("RGBA", (width, height))
+        for i in range(width):
+            for j in range(height):
+                gradient.putpixel((i, j), (r, g, b, round2(i / w * 255)))
+        self.gradient = ImageTk.PhotoImage(Image.alpha_composite(bg, gradient),
+                                           master=self)
+
+        self.create_image(0, 0, anchor="nw", tags="gardient",
+                          image=self.gradient)
+        self.lower("gradient")
+
+        x = alpha / 255. * width
+        self.create_line(x, 0, x, height, width=2, tags='cursor')
+
+    def _on_click(self, event):
+        """Move selection cursor on click."""
+        x = event.x
+        self.coords('cursor', x, 0, x, self.winfo_height())
+        self._variable.set(round2((255. * x) / self.winfo_width()))
+
+    def _on_move(self, event):
+        """Make selection cursor follow the cursor."""
+        w = self.winfo_width()
+        x = min(max(event.x, 0), w)
+        self.coords('cursor', x, 0, x, self.winfo_height())
+        self._variable.set(round2((255. * x) / w))
+
+    def _update_alpha(self, *args):
+        alpha = int(self._variable.get())
+        if alpha > 255:
+            alpha = 255
+        elif alpha < 0:
+            alpha = 0
+        self.set(alpha)
+
+    def get(self):
+        """Return hue of color under cursor."""
+        coords = self.coords('cursor')
+        return round2((255. * coords[0]) / self.winfo_width())
+
+    def set(self, alpha):
+        """Set cursor position on the color corresponding to the hue value."""
+        x = alpha / 255. * self.winfo_width()
+        self.coords('cursor', x, 0, x, self.winfo_height())
+        self._variable.set(alpha)
+
+    def set_color(self, color):
+        """Set gradient color to color (RGB)."""
+        alpha = self.get()
+        self._draw_gradient(alpha, color)
+
+
 class GradientBar(tk.Canvas):
     """HSV gradient colorbar with selection cursor."""
 
-    def __init__(self, parent, hue=0, height=10, width=256, **kwargs):
+    def __init__(self, parent, hue=0, height=10, width=256, variable=None,
+                 **kwargs):
         """
         Create a GradientBar.
 
         Keyword arguments:
             * parent: parent window
             * hue: initially selected hue value
+            * variable: IntVar linked to the alpha value
             * height, width, and any keyword argument accepted by a tkinter Canvas
         """
         tk.Canvas.__init__(self, parent, width=width, height=height, **kwargs)
+
+        self._variable = variable
+        if variable is not None:
+            try:
+                hue = int(variable.get())
+            except Exception:
+                pass
+        else:
+            self._variable = tk.IntVar(self)
+        if hue > 360:
+            hue = 360
+        elif hue < 0:
+            hue = 0
+        self._variable.set(hue)
+        try:
+            self._variable.trace_add("write", self._update_hue)
+        except Exception:
+            self._variable.trace("w", self._update_hue)
 
         self.gradient = tk.PhotoImage(master=self, width=width, height=height)
 
@@ -412,12 +534,22 @@ class GradientBar(tk.Canvas):
         """Move selection cursor on click."""
         x = event.x
         self.coords('cursor', x, 0, x, self.winfo_height())
+        self._variable.set(round2((360. * x) / self.winfo_width()))
 
     def _on_move(self, event):
         """Make selection cursor follow the cursor."""
         w = self.winfo_width()
         x = min(max(event.x, 0), w)
         self.coords('cursor', x, 0, x, self.winfo_height())
+        self._variable.set(round2((360. * x) / w))
+
+    def _update_hue(self, *args):
+        hue = int(self._variable.get())
+        if hue > 360:
+            hue = 360
+        elif hue < 0:
+            hue = 0
+        self.set(hue)
 
     def get(self):
         """Return hue of color under cursor."""
@@ -428,6 +560,7 @@ class GradientBar(tk.Canvas):
         """Set cursor position on the color corresponding to the hue value."""
         x = hue / 360. * self.winfo_width()
         self.coords('cursor', x, 0, x, self.winfo_height())
+        self._variable.set(hue)
 
 
 class ColorPicker(tk.Toplevel):
@@ -503,7 +636,7 @@ class ColorPicker(tk.Toplevel):
 
         frame = Frame(self)
         frame.columnconfigure(1, weight=1)
-        frame.rowconfigure(0, weight=1)
+        frame.rowconfigure(1, weight=1)
 
         # --- color preview: initial color and currently selected color side by side
         preview_frame = Frame(frame, relief="groove", borderwidth=2)
@@ -532,7 +665,7 @@ class ColorPicker(tk.Toplevel):
 
         # --- palette
         palette = Frame(frame)
-        palette.grid(row=0, column=1, sticky="ne")
+        palette.grid(row=0, column=1, rowspan=2, sticky="ne")
         for i, col in enumerate(PALETTE):
             f = Frame(palette, borderwidth=1, relief="raised",
                       style="palette.TFrame")
@@ -607,9 +740,11 @@ class ColorPicker(tk.Toplevel):
 
         # --- alpha
         if alpha:
-            alpha_frame = Frame(col_frame)
+            alpha_frame = Frame(frame)
+            alpha_frame.grid(row=1, column=0, sticky="nw")
+#            alpha_frame = Frame(col_frame)
+#            alpha_frame.pack(fill="x", pady=(4, 0))
             alpha_frame.columnconfigure(0, weight=1)
-            alpha_frame.pack(fill="x", pady=(4, 0))
             self.alpha = tk.StringVar(self)
             s_alpha = Spinbox(alpha_frame, from_=0, to=255, width=4,
                               textvariable=self.alpha, command=self._update_alpha)
