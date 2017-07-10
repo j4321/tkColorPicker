@@ -38,11 +38,11 @@ class TestFunctions(unittest.TestCase):
     def test_hsv_to_rgb(self):
         self.assertEqual(tkc.hsv_to_rgb(0, 100, 100), (255, 0, 0))
 
-    def test_rgb_to_html(self):
-        self.assertEqual(tkc.rgb_to_html(255, 255, 255), "#FFFFFF")
+    def test_rgb_to_hexa(self):
+        self.assertEqual(tkc.rgb_to_hexa(255, 255, 255), "#FFFFFF")
 
-    def test_html_to_rgb(self):
-        self.assertEqual(tkc.html_to_rgb("#FFFFFF"), (255, 255, 255))
+    def test_hexa_to_rgb(self):
+        self.assertEqual(tkc.hexa_to_rgb("#FFFFFF"), (255, 255, 255))
 
     def test_hue2col(self):
         self.assertEqual(tkc.hue2col(0), (255, 0, 0))
@@ -163,17 +163,20 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
         cp.square.event_generate("<Button-1>", x=10, y=1)
         self.window.update()
-        cp.html.event_generate("<FocusOut>")
+        cp.hexa.event_generate("<FocusOut>")
         self.window.update()
-        cp.html.event_generate("<Return>")
+        cp.hexa.event_generate("<Return>")
         self.window.update()
 
     def test_colorpicker_functions(self):
-        cp = tkc.ColorPicker(self.window, color="sky blue", title='Test')
+        cp = tkc.ColorPicker(self.window, color="sky blue", title='Test',
+                             alpha=True)
         self.window.update()
         cp._update_color_rgb()
         self.window.update()
         cp._update_color_hsv()
+        self.window.update()
+        cp._update_alpha()
         self.window.update()
         cp.get_color()
         self.window.update()
