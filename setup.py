@@ -34,5 +34,6 @@ setup(
     ],
     keywords=['tkinter', 'color', 'colorchooser'],
     py_modules=["tkcolorpicker"],
+    requires=["tkinter", 'PIL']
 
 )

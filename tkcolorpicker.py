@@ -29,11 +29,10 @@ except ImportError:
     from ttk import Entry, Button, Label, Frame, Style
 import re
 import os
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageTk
 from math import atan2, sqrt, pi
 import colorsys
 from locale import getdefaultlocale
-import tempfile
 
 
 # in some python versions round returns a float instead of an int
@@ -68,14 +67,14 @@ def create_checkered_image(width, height, c1=(154, 154, 154, 255),
     return im
 
 
-def overlay(image, color, file):
+def overlay(image, color):
     """
-    Overlay a rectangle of color (RGBA) on the image and save to file.
+    Overlay a rectangle of color (RGBA) on the image and return the result.
     """
     width, height = image.size
     im = Image.new("RGBA", (width, height), color)
     preview = Image.alpha_composite(image, im)
-    preview.save(file)
+    return preview
 
 
 # --- Translation
@@ -510,11 +509,15 @@ class ColorPicker(tk.Toplevel):
         preview_frame = Frame(frame, relief="groove", borderwidth=2)
         preview_frame.grid(row=0, column=0, sticky="nw", pady=2)
         if alpha:
-            self._prev_old_color = tempfile.mkstemp(suffix=".png")[1]
-            self._prev_color = tempfile.mkstemp(suffix=".png")[1]
+            self._transparent_bg = create_checkered_image(42, 32)
+            prev = overlay(self._transparent_bg, hexa_to_rgb(old_color))
+            self._im_old_color = ImageTk.PhotoImage(prev, master=self)
+            self._im_color = ImageTk.PhotoImage(prev, master=self)
             old_color_prev = tk.Label(preview_frame, padx=0, pady=0,
+                                      image=self._im_old_color,
                                       borderwidth=0, highlightthickness=0)
             self.color_preview = tk.Label(preview_frame, pady=0, padx=0,
+                                          image=self._im_color,
                                           borderwidth=0, highlightthickness=0)
         else:
             old_color_prev = tk.Label(preview_frame, background=old_color[:7],
@@ -659,24 +662,12 @@ class ColorPicker(tk.Toplevel):
         if alpha:
             s_alpha.bind('<Return>', self._update_alpha)
             s_alpha.bind('<FocusOut>', self._update_alpha)
-            self.color_preview.bind("<Destroy>", self._cleanup)
         self.hexa.bind("<FocusOut>", self._update_color_hexa)
         self.hexa.bind("<Return>", self._update_color_hexa)
 
         self.wait_visibility()
         self.lift()
         self.grab_set()
-        if alpha:
-            self.wait_visibility(old_color_prev)
-            self._transparent_bg = create_checkered_image(42, 32)
-            overlay(self._transparent_bg, hexa_to_rgb(old_color),
-                    self._prev_old_color)
-            self._im_old_color = tk.PhotoImage(master=self,
-                                               file=self._prev_old_color)
-            self._im_color = tk.PhotoImage(master=self,
-                                           file=self._prev_old_color)
-            old_color_prev.configure(image=self._im_old_color)
-            self.color_preview.configure(image=self._im_color)
 
     def get_color(self):
         """Return selected color, return an empty string if no color is selected."""
@@ -764,10 +755,8 @@ class ColorPicker(tk.Toplevel):
         """Update color preview."""
         color = self.hexa.get()
         if self.alpha_channel:
-            overlay(self._transparent_bg, hexa_to_rgb(color),
-                    self._prev_color)
-            self._im_color = tk.PhotoImage(master=self,
-                                           file=self._prev_color)
+            prev = overlay(self._transparent_bg, hexa_to_rgb(color))
+            self._im_color = ImageTk.PhotoImage(prev, master=self)
             self.color_preview.configure(image=self._im_color)
         else:
             self.color_preview.configure(background=color)
@@ -934,15 +923,6 @@ class ColorPicker(tk.Toplevel):
             self.square.set_hsv((h, s, v))
             self.bar.set(h)
             self._update_preview()
-
-    def _cleanup(self, event):
-        """Delete temporary files."""
-        try:
-            os.remove(self._prev_color)
-            os.remove(self._prev_old_color)
-            print("cleanup")
-        except Exception:
-            pass
 
     def ok(self):
         rgb, hsv, hexa = self.square.get()

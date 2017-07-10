@@ -26,7 +26,6 @@ except ImportError:
     import tkinter as tk
 import tkcolorpicker as tkc
 import tempfile
-import os
 
 
 class TestFunctions(unittest.TestCase):
@@ -59,10 +58,8 @@ class TestFunctions(unittest.TestCase):
                                    (0, 0, 0, 255), s=8)
 
     def test_overlay(self):
-        tmp = tempfile.mkstemp(suffix=".png")[1]
         im = tkc.create_checkered_image(200, 200)
-        tkc.overlay(im, (255, 0, 0, 100), tmp)
-        os.remove(tmp)
+        tkc.overlay(im, (255, 0, 0, 100))
 
 
 class BaseWidgetTest(unittest.TestCase):
