@@ -5,6 +5,9 @@ Copyright 2016-2017 Juliette Monsel <j_4321@protonmail.com>
 Changelog
 ---------
 
+- tkcolorpicker 2.1.0
+    * Add optional alpha channel support
+    
 - tkcolorpicker 2.0.0
     * Make package name lowercase to follow PEP 8 guidelines
     * Add python 2.7 compatibility
