@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-tkColorPicker - Alternative to colorchooser for Tkinter.
+tkcolorpicker - Alternative to colorchooser for Tkinter.
 Copyright 2017 Juliette Monsel <j_4321@protonmail.com>
 
-tkColorPicker is free software: you can redistribute it and/or modify
+tkcolorpicker is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-tkColorPicker is distributed in the hope that it will be useful,
+tkcolorpicker is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
@@ -44,7 +44,7 @@ else:
 
 
 def create_checkered_image(width, height, c1=(154, 154, 154, 255),
-                           c2=(100, 100, 100, 255), s=8):
+                           c2=(100, 100, 100, 255), s=6):
     """
     Return a checkered image of size width x height.
 
@@ -368,7 +368,7 @@ class ColorSquare(tk.Canvas):
 class AlphaBar(tk.Canvas):
     """Bar to select alpha value."""
 
-    def __init__(self, parent, alpha=255, color=(255, 0, 0), height=10,
+    def __init__(self, parent, alpha=255, color=(255, 0, 0), height=11,
                  width=256, variable=None, **kwargs):
         """
         Create a bar to select the alpha value.
@@ -428,7 +428,12 @@ class AlphaBar(tk.Canvas):
         self.lower("gradient")
 
         x = alpha / 255. * width
-        self.create_line(x, 0, x, height, width=2, tags='cursor')
+        h, s, v = rgb_to_hsv(r, g, b)
+        if v < 50:
+            fill = "gray80"
+        else:
+            fill = 'black'
+        self.create_line(x, 0, x, height, width=2, tags='cursor', fill=fill)
 
     def _on_click(self, event):
         """Move selection cursor on click."""
@@ -463,15 +468,18 @@ class AlphaBar(tk.Canvas):
         self._variable.set(alpha)
 
     def set_color(self, color):
-        """Set gradient color to color (RGB)."""
-        alpha = self.get()
-        self._draw_gradient(alpha, color)
+        """Set gradient color to color in RGB(A)."""
+        if len(color) == 3:
+            alpha = self.get()
+        else:
+            alpha = color[3]
+        self._draw_gradient(alpha, color[:3])
 
 
 class GradientBar(tk.Canvas):
     """HSV gradient colorbar with selection cursor."""
 
-    def __init__(self, parent, hue=0, height=10, width=256, variable=None,
+    def __init__(self, parent, hue=0, height=11, width=256, variable=None,
                  **kwargs):
         """
         Create a GradientBar.
@@ -594,27 +602,27 @@ class ColorPicker(tk.Toplevel):
         if isinstance(color, str):
             if re.match(r"^#[0-9A-F]{8}$", color.upper()):
                 col = hexa_to_rgb(color)
-                self.old_color = col[:3]
+                self._old_color = col[:3]
                 if alpha:
                     self._old_alpha = col[3]
                     old_color = color
                 else:
                     old_color = color[:7]
             elif re.match(r"^#[0-9A-F]{6}$", color.upper()):
-                self.old_color = hexa_to_rgb(color)
+                self._old_color = hexa_to_rgb(color)
                 old_color = color
                 if alpha:
                     self._old_alpha = 255
                     old_color += 'FF'
             else:
                 col = self.winfo_rgb(color)
-                self.old_color = tuple(round2(c * 255 / 65535) for c in col)
+                self._old_color = tuple(round2(c * 255 / 65535) for c in col)
                 if alpha:
                     self._old_alpha = 255
-                args = self.old_color + (255,)
+                args = self._old_color + (255,)
                 old_color = rgb_to_hexa(*args)
         else:
-            self.old_color = color[:3]
+            self._old_color = color[:3]
             if alpha:
                 if len(color) < 4:
                     color += (255,)
@@ -623,14 +631,16 @@ class ColorPicker(tk.Toplevel):
                     self._old_alpha = color[3]
             old_color = rgb_to_hexa(*color)
 
-        hue = col2hue(*self.old_color)
+        # --- GradientBar
+        hue = col2hue(*self._old_color)
         bar = Frame(self, borderwidth=2, relief='groove')
         self.bar = GradientBar(bar, hue=hue, width=200, highlightthickness=0)
         self.bar.pack()
 
+        # --- ColorSquare
         square = Frame(self, borderwidth=2, relief='groove')
         self.square = ColorSquare(square, hue=hue, width=200, height=200,
-                                  color=rgb_to_hsv(*self.old_color),
+                                  color=rgb_to_hsv(*self._old_color),
                                   highlightthickness=0)
         self.square.pack()
 
@@ -643,8 +653,12 @@ class ColorPicker(tk.Toplevel):
         preview_frame.grid(row=0, column=0, sticky="nw", pady=2)
         if alpha:
             self._transparent_bg = create_checkered_image(42, 32)
+            transparent_bg_old = create_checkered_image(42, 32,
+                                                        (100, 100, 100, 255),
+                                                        (154, 154, 154, 255))
+            prev_old = overlay(transparent_bg_old, hexa_to_rgb(old_color))
             prev = overlay(self._transparent_bg, hexa_to_rgb(old_color))
-            self._im_old_color = ImageTk.PhotoImage(prev, master=self)
+            self._im_old_color = ImageTk.PhotoImage(prev_old, master=self)
             self._im_color = ImageTk.PhotoImage(prev, master=self)
             old_color_prev = tk.Label(preview_frame, padx=0, pady=0,
                                       image=self._im_old_color,
@@ -691,7 +705,7 @@ class ColorPicker(tk.Toplevel):
                       command=self._update_color_hsv)
         s_v = Spinbox(hsv_frame, from_=0, to=100, width=4,
                       textvariable=self.value, command=self._update_color_hsv)
-        h, s, v = rgb_to_hsv(*self.old_color)
+        h, s, v = rgb_to_hsv(*self._old_color)
         s_h.delete(0, 'end')
         s_h.insert(0, h)
         s_s.delete(0, 'end')
@@ -723,44 +737,45 @@ class ColorPicker(tk.Toplevel):
         s_blue = Spinbox(rgb_frame, from_=0, to=255, width=4,
                          textvariable=self.blue, command=self._update_color_rgb)
         s_red.delete(0, 'end')
-        s_red.insert(0, self.old_color[0])
+        s_red.insert(0, self._old_color[0])
         s_green.delete(0, 'end')
-        s_green.insert(0, self.old_color[1])
+        s_green.insert(0, self._old_color[1])
         s_blue.delete(0, 'end')
-        s_blue.insert(0, self.old_color[2])
-        s_red.grid(row=0, column=1, sticky='w', padx=4, pady=4)
-        s_green.grid(row=1, column=1, sticky='w', padx=4, pady=4)
-        s_blue.grid(row=2, column=1, sticky='w', padx=4, pady=4)
+        s_blue.insert(0, self._old_color[2])
+        s_red.grid(row=0, column=1, sticky='e', padx=4, pady=4)
+        s_green.grid(row=1, column=1, sticky='e', padx=4, pady=4)
+        s_blue.grid(row=2, column=1, sticky='e', padx=4, pady=4)
         Label(rgb_frame, text=_('Red')).grid(row=0, column=0, sticky='e',
                                              padx=4, pady=4)
         Label(rgb_frame, text=_('Green')).grid(row=1, column=0, sticky='e',
                                                padx=4, pady=4)
         Label(rgb_frame, text=_('Blue')).grid(row=2, column=0, sticky='e',
                                               padx=4, pady=4)
-
-        # --- alpha
-        if alpha:
-            alpha_frame = Frame(frame)
-            alpha_frame.grid(row=1, column=0, sticky="nw")
-#            alpha_frame = Frame(col_frame)
-#            alpha_frame.pack(fill="x", pady=(4, 0))
-            alpha_frame.columnconfigure(0, weight=1)
-            self.alpha = tk.StringVar(self)
-            s_alpha = Spinbox(alpha_frame, from_=0, to=255, width=4,
-                              textvariable=self.alpha, command=self._update_alpha)
-            s_alpha.delete(0, 'end')
-            s_alpha.insert(0, self._old_alpha)
-            Label(alpha_frame, text=_('Alpha')).grid(row=0, column=0, sticky='e',
-                                                     padx=4, pady=4)
-            s_alpha.grid(row=0, column=1, sticky='w', padx=4, pady=4)
-
         # --- hexa
         hexa_frame = Frame(col_frame)
         hexa_frame.pack(fill="x")
         self.hexa = Entry(hexa_frame, justify="center", width=10)
         self.hexa.insert(0, old_color)
         Label(hexa_frame, text="HTML").pack(side="left", padx=4, pady=4)
-        self.hexa.pack(side="left", padx=4, pady=4, fill='x', expand=True)
+        self.hexa.pack(side="left", padx=6, pady=(4, 0), fill='x', expand=True)
+
+        # --- alpha
+        if alpha:
+            alpha_frame = Frame(self)
+            alpha_frame.columnconfigure(1, weight=1)
+            self.alpha = tk.StringVar(self)
+            alphabar = Frame(alpha_frame, borderwidth=2, relief='groove')
+            self.alphabar = AlphaBar(alphabar, alpha=self._old_alpha, width=200,
+                                     color=self._old_color, highlightthickness=0)
+            self.alphabar.pack()
+            s_alpha = Spinbox(alpha_frame, from_=0, to=255, width=4,
+                              textvariable=self.alpha, command=self._update_alpha)
+            s_alpha.delete(0, 'end')
+            s_alpha.insert(0, self._old_alpha)
+            alphabar.grid(row=0, column=0, padx=(0, 4), pady=4, sticky='w')
+            Label(alpha_frame, text=_('Alpha')).grid(row=0, column=1, sticky='e',
+                                                     padx=4, pady=4)
+            s_alpha.grid(row=0, column=2, sticky='w', padx=(4, 6), pady=4)
 
         # --- validation
         button_frame = Frame(self)
@@ -771,14 +786,20 @@ class ColorPicker(tk.Toplevel):
 
         # --- placement
         bar.grid(row=0, column=0, padx=10, pady=(10, 4), sticky='n')
-        square.grid(row=1, column=0, padx=10, pady=7, sticky='n')
-        frame.grid(row=2, column=0, columnspan=2, pady=(4, 10), padx=10, sticky="new")
+        square.grid(row=1, column=0, padx=10, pady=(9, 0), sticky='n')
+        if alpha:
+            alpha_frame.grid(row=2, column=0, columnspan=2, padx=10,
+                             pady=(1, 4), sticky='ewn')
         col_frame.grid(row=0, rowspan=2, column=1, padx=(4, 10), pady=(10, 4))
-        button_frame.grid(row=3, columnspan=2, pady=(0, 10), padx=10)
+        frame.grid(row=3, column=0, columnspan=2, pady=(4, 10), padx=10, sticky="new")
+        button_frame.grid(row=4, columnspan=2, pady=(0, 10), padx=10)
 
         # --- bindings
         self.bar.bind("<ButtonRelease-1>", self._change_color, True)
         self.bar.bind("<Button-1>", self._unfocus, True)
+        if alpha:
+            self.alphabar.bind("<ButtonRelease-1>", self._change_alpha, True)
+            self.alphabar.bind("<Button-1>", self._unfocus, True)
         self.square.bind("<Button-1>", self._unfocus, True)
         self.square.bind("<ButtonRelease-1>", self._change_sel_color, True)
         self.square.bind("<B1-Motion>", self._change_sel_color, True)
@@ -901,15 +922,16 @@ class ColorPicker(tk.Toplevel):
         label = event.widget
         label.master.focus_set()
         label.master.configure(relief="sunken")
-        args = self.old_color
+        args = self._old_color
         if self.alpha_channel:
             args += (self._old_alpha,)
             self.alpha.set(self._old_alpha)
+            self.alphabar.set_color(args)
         color = rgb_to_hexa(*args)
-        h, s, v = rgb_to_hsv(*self.old_color)
-        self.red.set(self.old_color[0])
-        self.green.set(self.old_color[1])
-        self.blue.set(self.old_color[2])
+        h, s, v = rgb_to_hsv(*self._old_color)
+        self.red.set(self._old_color[0])
+        self.green.set(self._old_color[1])
+        self.blue.set(self._old_color[2])
         self.hue.set(h)
         self.saturation.set(s)
         self.value.set(v)
@@ -932,6 +954,7 @@ class ColorPicker(tk.Toplevel):
         if self.alpha_channel:
             a = self.get_color_value(self.alpha)
             args += (a,)
+            self.alphabar.set_color(args)
         color = rgb_to_hexa(*args)
         h, s, v = rgb_to_hsv(r, g, b)
         self.red.set(r)
@@ -957,6 +980,7 @@ class ColorPicker(tk.Toplevel):
         self.hexa.delete(0, "end")
         self.hexa.insert(0, color.upper())
         if self.alpha_channel:
+            self.alphabar.set_color((r, g, b))
             self.hexa.insert('end',
                              ("%2.2x" % self.get_color_value(self.alpha)).upper())
         self._update_preview()
@@ -975,8 +999,19 @@ class ColorPicker(tk.Toplevel):
         self.hexa.delete(0, "end")
         self.hexa.insert(0, sel_color.upper())
         if self.alpha_channel:
+            self.alphabar.set_color((r, g, b))
             self.hexa.insert('end',
                              ("%2.2x" % self.get_color_value(self.alpha)).upper())
+        self._update_preview()
+
+    def _change_alpha(self, event):
+        """Respond to motion of the alpha cursor."""
+        a = self.alphabar.get()
+        self.alpha.set(a)
+        hexa = self.hexa.get()
+        hexa = hexa[:7] + ("%2.2x" % a).upper()
+        self.hexa.delete(0, 'end')
+        self.hexa.insert(0, hexa)
         self._update_preview()
 
     def _update_color_hexa(self, event=None):
@@ -996,12 +1031,14 @@ class ColorPicker(tk.Toplevel):
             if self.alpha_channel:
                 self.alpha.set(255)
                 self.hexa.insert('end', 'FF')
+                self.alphabar.set_color((r, g, b, 255))
         elif self.alpha_channel and re.match(r"^#[0-9A-F]{8}$", color):
             r, g, b, a = hexa_to_rgb(color)
             self.red.set(r)
             self.green.set(g)
             self.blue.set(b)
             self.alpha.set(a)
+            self.alphabar.set_color((r, g, b, a))
             h, s, v = rgb_to_hsv(r, g, b)
             self.hue.set(h)
             self.saturation.set(s)
@@ -1013,11 +1050,13 @@ class ColorPicker(tk.Toplevel):
         self._update_preview()
 
     def _update_alpha(self, event=None):
-        """Update display after a change in the alpha spinboxe."""
+        """Update display after a change in the alpha spinbox."""
+        a = self.get_color_value(self.alpha)
         hexa = self.hexa.get()
-        hexa = hexa[:7] + ("%2.2x" % self.get_color_value(self.alpha)).upper()
+        hexa = hexa[:7] + ("%2.2x" % a).upper()
         self.hexa.delete(0, 'end')
         self.hexa.insert(0, hexa)
+        self.alphabar.set(a)
         self._update_preview()
 
     def _update_color_hsv(self, event=None):
@@ -1032,6 +1071,7 @@ class ColorPicker(tk.Toplevel):
             self.blue.set(sel_color[2])
             if self.alpha_channel:
                 sel_color += (self.get_color_value(self.alpha),)
+                self.alphabar.set_color(sel_color)
             hexa = rgb_to_hexa(*sel_color)
             self.hexa.delete(0, "end")
             self.hexa.insert(0, hexa)
@@ -1052,6 +1092,7 @@ class ColorPicker(tk.Toplevel):
             args = (r, g, b)
             if self.alpha_channel:
                 args += (self.get_color_value(self.alpha),)
+                self.alphabar.set_color(args)
             hexa = rgb_to_hexa(*args)
             self.hexa.delete(0, "end")
             self.hexa.insert(0, hexa)
@@ -1076,7 +1117,7 @@ def askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
     (None, None) is returned if the color selection is cancelled.
 
     Arguments:
-        * color: initially selected color (RGB, hexa or tkinter color name)
+        * color: initially selected color (RGB(A), hexa or tkinter color name)
         * parent: parent window
         * title: dialog title
         * alpha: alpha channel suppport
@@ -1091,8 +1132,19 @@ def askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
 
 
 if __name__ == "__main__":
+
+    def select_color1():
+        print(askcolor(color="sky blue", parent=root))
+
+    def select_color2():
+        print(askcolor(color=(255, 120, 0, 100), parent=root, alpha=True))
+
     root = tk.Tk()
     s = Style(root)
     s.theme_use('clam')
-    print(askcolor(color="sky blue", parent=root, alpha=True))
+    Label(root, text='Color Selection:').pack(padx=4, pady=4)
+    Button(root, text='solid color',
+           command=select_color1).pack(fill='x', padx=4, pady=4)
+    Button(root, text='with alpha channel',
+           command=select_color2).pack(fill='x', padx=4, pady=4)
     root.mainloop()

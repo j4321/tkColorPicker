@@ -159,6 +159,8 @@ class TestAlphaBar(BaseWidgetTest):
         self.assertEqual(ab.get(), 40)
         ab.set_color((0, 0, 0))
         self.window.update()
+        ab.set_color((0, 0, 0, 100))
+        self.window.update()
         ab._update_alpha()
         self.window.update()
 
@@ -229,11 +231,16 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
 
     def test_colorpicker_bindings(self):
-        cp = tkc.ColorPicker(self.window, color="sky blue", title='Test')
+        cp = tkc.ColorPicker(self.window, color="sky blue", title='Test',
+                             alpha=True)
         self.window.update()
         cp.bar.event_generate("<ButtonRelease-1>", x=10, y=1)
         self.window.update()
         cp.bar.event_generate("<Button-1>", x=10, y=1)
+        self.window.update()
+        cp.alphabar.event_generate("<ButtonRelease-1>", x=10, y=1)
+        self.window.update()
+        cp.alphabar.event_generate("<Button-1>", x=10, y=1)
         self.window.update()
         cp.square.event_generate("<ButtonRelease-1>", x=10, y=1)
         self.window.update()
@@ -245,7 +252,7 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
 
     def test_colorpicker_functions(self):
-        cp = tkc.ColorPicker(self.window, color="sky blue", title='Test',
+        cp = tkc.ColorPicker(self.window, color=(255, 0, 0, 255), title='Test',
                              alpha=True)
         self.window.update()
         cp._update_color_rgb()
@@ -254,9 +261,25 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
         cp._update_alpha()
         self.window.update()
-        cp.get_color()
+        self.assertEqual(cp.get_color(), "")
         self.window.update()
         cp.ok()
+        self.assertEqual(cp.get_color(),
+                         ((255, 0, 0, 255), (0, 100, 100), "#FF0000FF"))
+        self.window.update()
+        cp.destroy()
+        self.window.update()
+        cp = tkc.ColorPicker(self.window, color=(255, 0, 0), title='Test')
+        self.window.update()
+        cp._update_color_rgb()
+        self.window.update()
+        cp._update_color_hsv()
+        self.window.update()
+        self.assertEqual(cp.get_color(), "")
+        self.window.update()
+        cp.ok()
+        self.assertEqual(cp.get_color(),
+                         ((255, 0, 0), (0, 100, 100), "#FF0000"))
         self.window.update()
 
     def test_colorpicker_staticmethods(self):
