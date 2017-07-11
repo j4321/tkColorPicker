@@ -250,6 +250,21 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
         cp.hexa.event_generate("<Return>")
         self.window.update()
+        cp.destroy()
+        cp = tkc.ColorPicker(self.window, color="sky blue", title='Test')
+        self.window.update()
+        cp.bar.event_generate("<ButtonRelease-1>", x=10, y=1)
+        self.window.update()
+        cp.bar.event_generate("<Button-1>", x=10, y=1)
+        self.window.update()
+        cp.square.event_generate("<ButtonRelease-1>", x=10, y=1)
+        self.window.update()
+        cp.square.event_generate("<Button-1>", x=10, y=1)
+        self.window.update()
+        cp.hexa.event_generate("<FocusOut>")
+        self.window.update()
+        cp.hexa.event_generate("<Return>")
+        self.window.update()
 
     def test_colorpicker_functions(self):
         cp = tkc.ColorPicker(self.window, color=(255, 0, 0, 255), title='Test',
