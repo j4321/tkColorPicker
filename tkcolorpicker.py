@@ -131,6 +131,8 @@ def hexa_to_rgb(color):
         return r, g, b
     elif len(color) == 9:
         return r, g, b, int(color[7:9], 16)
+    else:
+        raise ValueError("Invalid hexadecimal notation.")
 
 
 def col2hue(r, g, b):

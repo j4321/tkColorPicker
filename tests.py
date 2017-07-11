@@ -42,13 +42,17 @@ class TestFunctions(unittest.TestCase):
     def test_rgb_to_hexa(self):
         self.assertEqual(tkc.rgb_to_hexa(255, 255, 255), "#FFFFFF")
         self.assertEqual(tkc.rgb_to_hexa(255, 255, 255, 255), "#FFFFFFFF")
+        self.assertRaises(ValueError, tkc.rgb_to_hexa, 255, 255)
 
     def test_hexa_to_rgb(self):
         self.assertEqual(tkc.hexa_to_rgb("#FFFFFF"), (255, 255, 255))
         self.assertEqual(tkc.hexa_to_rgb("#FFFFFFFF"), (255, 255, 255, 255))
+        self.assertRaises(ValueError, tkc.hexa_to_rgb, "#FFFFF")
 
     def test_hue2col(self):
         self.assertEqual(tkc.hue2col(0), (255, 0, 0))
+        self.assertRaises(ValueError, tkc.hue2col, 365)
+        self.assertRaises(ValueError, tkc.hue2col, -20)
 
     def test_col2hue(self):
         self.assertEqual(tkc.col2hue(255, 0, 0), 0)
@@ -72,6 +76,10 @@ class BaseWidgetTest(unittest.TestCase):
         self.window.destroy()
 
 
+class TestEvent:
+    pass
+
+
 class TestSpinbox(BaseWidgetTest):
     def test_spinbox_init(self):
         spinbox = tkc.Spinbox(self.window, from_=0, to=10)
@@ -86,6 +94,10 @@ class TestSpinbox(BaseWidgetTest):
         self.window.update()
         spinbox.event_generate('<FocusOut>')
         self.window.update()
+        event = TestEvent()
+        event.widget = spinbox.frame
+        spinbox.focusin(event)
+        spinbox.focusout(event)
 
 
 class TestColorSquare(BaseWidgetTest):
@@ -134,6 +146,25 @@ class TestAlphaBar(BaseWidgetTest):
                           height=12, width=200)
         ab.pack()
         self.window.update()
+        ab.destroy()
+        self.window.update()
+        ab = tkc.AlphaBar(self.window, alpha=500, color=(255, 255, 2),
+                          height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab.destroy()
+        self.window.update()
+        ab = tkc.AlphaBar(self.window, alpha=-20, color=(255, 255, 2),
+                          height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab.destroy()
+        self.window.update()
+        var = tk.IntVar(self.window)
+        ab = tkc.AlphaBar(self.window, alpha=200, color=(255, 255, 2),
+                          height=12, width=200, variable=var)
+        ab.pack()
+        self.window.update()
 
     def test_alphabar_bindings(self):
         ab = tkc.AlphaBar(self.window, alpha=20, height=12, width=200)
@@ -163,11 +194,34 @@ class TestAlphaBar(BaseWidgetTest):
         self.window.update()
         ab._update_alpha()
         self.window.update()
+        ab._variable.set(455)
+        self.window.update()
+        self.assertEqual(ab.get(), 255)
+        ab._variable.set(-55)
+        self.window.update()
+        self.assertEqual(ab.get(), 0)
 
 
 class TestGradientBar(BaseWidgetTest):
     def test_gradientbar_init(self):
+        gb = tkc.GradientBar(self.window, hue=800, height=12, width=200)
+        gb.pack()
+        self.window.update()
+        gb.destroy()
+        self.window.update()
+        gb = tkc.GradientBar(self.window, hue=-20, height=12, width=200)
+        gb.pack()
+        self.window.update()
+        gb.destroy()
+        self.window.update()
         gb = tkc.GradientBar(self.window, hue=20, height=12, width=200)
+        gb.pack()
+        self.window.update()
+        gb.destroy()
+        self.window.update()
+        var = tk.IntVar(self.window)
+        gb = tkc.GradientBar(self.window, hue=20, height=12, width=200,
+                             variable=var)
         gb.pack()
         self.window.update()
 
@@ -195,6 +249,12 @@ class TestGradientBar(BaseWidgetTest):
         self.assertEqual(gb.get(), 40)
         gb._update_hue()
         self.window.update()
+        gb._variable.set(455)
+        self.window.update()
+        self.assertEqual(gb.get(), 360)
+        gb._variable.set(-55)
+        self.window.update()
+        self.assertEqual(gb.get(), 0)
 
 
 class TestColorPicker(BaseWidgetTest):
@@ -309,6 +369,14 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
         cp.hexa.event_generate("<Return>")
         self.window.update()
+        event = TestEvent()
+        event.widget = tk.Label(self.window, bg='red')
+        cp._reset_preview(event)
+        self.window.update()
+        cp._palette_cmd(event)
+        self.window.update()
+        cp._change_sel_color(event)
+        self.window.update()
 
     def test_colorpicker_functions(self):
         cp = tkc.ColorPicker(self.window, color=(255, 0, 0, 255), title='Test',
@@ -317,6 +385,8 @@ class TestColorPicker(BaseWidgetTest):
         cp._update_color_rgb()
         self.window.update()
         cp._update_color_hsv()
+        self.window.update()
+        cp._update_color_hexa()
         self.window.update()
         cp._update_alpha()
         self.window.update()
@@ -332,6 +402,8 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
         cp._update_color_rgb()
         self.window.update()
+        cp._update_color_hexa()
+        self.window.update()
         cp._update_color_hsv()
         self.window.update()
         self.assertEqual(cp.get_color(), "")
@@ -346,7 +418,11 @@ class TestColorPicker(BaseWidgetTest):
         strvar = tkc.tk.StringVar(cp, -2)
         self.window.update()
         self.assertEqual(cp.get_hue_value(strvar), 0)
+        self.window.update()
+        strvar.set(-2)
         self.assertEqual(cp.get_sv_value(strvar), 0)
+        self.window.update()
+        strvar.set(-2)
         self.assertEqual(cp.get_color_value(strvar), 0)
         self.window.update()
         strvar.set(50)
@@ -362,3 +438,13 @@ class TestColorPicker(BaseWidgetTest):
         self.assertEqual(cp.get_sv_value(strvar), 100)
         self.assertEqual(strvar.get(), '100')
         self.window.update()
+        strvar.set('q')
+        self.assertEqual(cp.get_sv_value(strvar), 0)
+        self.window.update()
+        strvar.set('q')
+        self.assertEqual(cp.get_hue_value(strvar), 0)
+        self.window.update()
+        strvar.set('q')
+        self.assertEqual(cp.get_color_value(strvar), 0)
+        self.window.update()
+
