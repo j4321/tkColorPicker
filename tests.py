@@ -25,6 +25,7 @@ try:
 except ImportError:
     import tkinter as tk
 import tkcolorpicker as tkc
+import tempfile
 
 
 class TestFunctions(unittest.TestCase):
@@ -38,17 +39,31 @@ class TestFunctions(unittest.TestCase):
     def test_hsv_to_rgb(self):
         self.assertEqual(tkc.hsv_to_rgb(0, 100, 100), (255, 0, 0))
 
-    def test_rgb_to_html(self):
-        self.assertEqual(tkc.rgb_to_html(255, 255, 255), "#FFFFFF")
+    def test_rgb_to_hexa(self):
+        self.assertEqual(tkc.rgb_to_hexa(255, 255, 255), "#FFFFFF")
+        self.assertEqual(tkc.rgb_to_hexa(255, 255, 255, 255), "#FFFFFFFF")
+        self.assertRaises(ValueError, tkc.rgb_to_hexa, 255, 255)
 
-    def test_html_to_rgb(self):
-        self.assertEqual(tkc.html_to_rgb("#FFFFFF"), (255, 255, 255))
+    def test_hexa_to_rgb(self):
+        self.assertEqual(tkc.hexa_to_rgb("#FFFFFF"), (255, 255, 255))
+        self.assertEqual(tkc.hexa_to_rgb("#FFFFFFFF"), (255, 255, 255, 255))
+        self.assertRaises(ValueError, tkc.hexa_to_rgb, "#FFFFF")
 
     def test_hue2col(self):
         self.assertEqual(tkc.hue2col(0), (255, 0, 0))
+        self.assertRaises(ValueError, tkc.hue2col, 365)
+        self.assertRaises(ValueError, tkc.hue2col, -20)
 
     def test_col2hue(self):
         self.assertEqual(tkc.col2hue(255, 0, 0), 0)
+
+    def test_create_checkered_image(self):
+        tkc.create_checkered_image(100, 100, (155, 120, 10, 255),
+                                   (0, 0, 0, 255), s=8)
+
+    def test_overlay(self):
+        im = tkc.create_checkered_image(200, 200)
+        tkc.overlay(im, (255, 0, 0, 100))
 
 
 class BaseWidgetTest(unittest.TestCase):
@@ -59,6 +74,10 @@ class BaseWidgetTest(unittest.TestCase):
     def tearDown(self):
         self.window.update()
         self.window.destroy()
+
+
+class TestEvent:
+    pass
 
 
 class TestSpinbox(BaseWidgetTest):
@@ -75,6 +94,10 @@ class TestSpinbox(BaseWidgetTest):
         self.window.update()
         spinbox.event_generate('<FocusOut>')
         self.window.update()
+        event = TestEvent()
+        event.widget = spinbox.frame
+        spinbox.focusin(event)
+        spinbox.focusout(event)
 
 
 class TestColorSquare(BaseWidgetTest):
@@ -117,9 +140,88 @@ class TestColorSquare(BaseWidgetTest):
         self.window.update()
 
 
+class TestAlphaBar(BaseWidgetTest):
+    def test_alphabar_init(self):
+        ab = tkc.AlphaBar(self.window, alpha=200, color=(255, 255, 2),
+                          height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab.destroy()
+        self.window.update()
+        ab = tkc.AlphaBar(self.window, alpha=500, color=(255, 255, 2),
+                          height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab.destroy()
+        self.window.update()
+        ab = tkc.AlphaBar(self.window, alpha=-20, color=(255, 255, 2),
+                          height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab.destroy()
+        self.window.update()
+        var = tk.IntVar(self.window)
+        ab = tkc.AlphaBar(self.window, alpha=200, color=(255, 255, 2),
+                          height=12, width=200, variable=var)
+        ab.pack()
+        self.window.update()
+
+    def test_alphabar_bindings(self):
+        ab = tkc.AlphaBar(self.window, alpha=20, height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab.event_generate('<1>', x=10, y=50)
+        self.window.update()
+        ab.event_generate('<B1-Motion>', x=20, y=50)
+        self.window.update()
+        ab.event_generate('<Configure>')
+        self.window.update()
+
+    def test_alphabar_functions(self):
+        ab = tkc.AlphaBar(self.window, alpha=20, height=12, width=200)
+        ab.pack()
+        self.window.update()
+        ab._draw_gradient(60, (255, 255, 0))
+        self.window.update()
+        self.assertEqual(ab.get(), 60)
+        self.window.update()
+        ab.set(40)
+        self.window.update()
+        self.assertEqual(ab.get(), 40)
+        ab.set_color((0, 0, 0))
+        self.window.update()
+        ab.set_color((0, 0, 0, 100))
+        self.window.update()
+        ab._update_alpha()
+        self.window.update()
+        ab._variable.set(455)
+        self.window.update()
+        self.assertEqual(ab.get(), 255)
+        ab._variable.set(-55)
+        self.window.update()
+        self.assertEqual(ab.get(), 0)
+
+
 class TestGradientBar(BaseWidgetTest):
     def test_gradientbar_init(self):
+        gb = tkc.GradientBar(self.window, hue=800, height=12, width=200)
+        gb.pack()
+        self.window.update()
+        gb.destroy()
+        self.window.update()
+        gb = tkc.GradientBar(self.window, hue=-20, height=12, width=200)
+        gb.pack()
+        self.window.update()
+        gb.destroy()
+        self.window.update()
         gb = tkc.GradientBar(self.window, hue=20, height=12, width=200)
+        gb.pack()
+        self.window.update()
+        gb.destroy()
+        self.window.update()
+        var = tk.IntVar(self.window)
+        gb = tkc.GradientBar(self.window, hue=20, height=12, width=200,
+                             variable=var)
         gb.pack()
         self.window.update()
 
@@ -145,14 +247,114 @@ class TestGradientBar(BaseWidgetTest):
         gb.set(40)
         self.window.update()
         self.assertEqual(gb.get(), 40)
+        gb._update_hue()
+        self.window.update()
+        gb._variable.set(455)
+        self.window.update()
+        self.assertEqual(gb.get(), 360)
+        gb._variable.set(-55)
+        self.window.update()
+        self.assertEqual(gb.get(), 0)
 
 
 class TestColorPicker(BaseWidgetTest):
     def test_colorpicker_init(self):
-        tkc.ColorPicker(self.window, color="sky blue", title='Test')
+        c = tkc.ColorPicker(self.window, color="red", title='Test')
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0), (0, 100, 100), '#FF0000'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="red", title='Test', alpha=True)
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0, 255), (0, 100, 100), '#FF0000FF'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="#ff0000", title='Test')
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0), (0, 100, 100), '#FF0000'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="#ff0000", title='Test',
+                            alpha=True)
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0, 255), (0, 100, 100), '#FF0000FF'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="#ff000000", title='Test',
+                            alpha=True)
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0, 0), (0, 100, 100), '#FF000000'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color="#ff000000", title='Test')
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0), (0, 100, 100), '#FF0000'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color=(255, 0, 0), title='Test')
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0), (0, 100, 100), '#FF0000'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color=(255, 0, 0), title='Test',
+                            alpha=True)
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0, 255), (0, 100, 100), '#FF0000FF'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color=(255, 0, 0, 0), title='Test',
+                            alpha=True)
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0, 0), (0, 100, 100), '#FF000000'))
+        c.destroy()
+        self.window.update()
+        c = tkc.ColorPicker(self.window, color=(255, 0, 0, 0), title='Test')
+        self.window.update()
+        c.ok()
+        self.assertEqual(c.get_color(),
+                         ((255, 0, 0), (0, 100, 100), '#FF0000'))
+        c.destroy()
         self.window.update()
 
     def test_colorpicker_bindings(self):
+        cp = tkc.ColorPicker(self.window, color="sky blue", title='Test',
+                             alpha=True)
+        self.window.update()
+        cp.bar.event_generate("<ButtonRelease-1>", x=10, y=1)
+        self.window.update()
+        cp.bar.event_generate("<Button-1>", x=10, y=1)
+        self.window.update()
+        cp.alphabar.event_generate("<ButtonRelease-1>", x=10, y=1)
+        self.window.update()
+        cp.alphabar.event_generate("<Button-1>", x=10, y=1)
+        self.window.update()
+        cp.square.event_generate("<ButtonRelease-1>", x=10, y=1)
+        self.window.update()
+        cp.square.event_generate("<Button-1>", x=10, y=1)
+        self.window.update()
+        cp.hexa.event_generate("<FocusOut>")
+        self.window.update()
+        cp.hexa.event_generate("<Return>")
+        self.window.update()
+        cp.destroy()
         cp = tkc.ColorPicker(self.window, color="sky blue", title='Test')
         self.window.update()
         cp.bar.event_generate("<ButtonRelease-1>", x=10, y=1)
@@ -163,21 +365,52 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
         cp.square.event_generate("<Button-1>", x=10, y=1)
         self.window.update()
-        cp.html.event_generate("<FocusOut>")
+        cp.hexa.event_generate("<FocusOut>")
         self.window.update()
-        cp.html.event_generate("<Return>")
+        cp.hexa.event_generate("<Return>")
+        self.window.update()
+        event = TestEvent()
+        event.widget = tk.Label(self.window, bg='red')
+        cp._reset_preview(event)
+        self.window.update()
+        cp._palette_cmd(event)
+        self.window.update()
+        cp._change_sel_color(event)
         self.window.update()
 
     def test_colorpicker_functions(self):
-        cp = tkc.ColorPicker(self.window, color="sky blue", title='Test')
+        cp = tkc.ColorPicker(self.window, color=(255, 0, 0, 255), title='Test',
+                             alpha=True)
         self.window.update()
         cp._update_color_rgb()
         self.window.update()
         cp._update_color_hsv()
         self.window.update()
-        cp.get_color()
+        cp._update_color_hexa()
+        self.window.update()
+        cp._update_alpha()
+        self.window.update()
+        self.assertEqual(cp.get_color(), "")
         self.window.update()
         cp.ok()
+        self.assertEqual(cp.get_color(),
+                         ((255, 0, 0, 255), (0, 100, 100), "#FF0000FF"))
+        self.window.update()
+        cp.destroy()
+        self.window.update()
+        cp = tkc.ColorPicker(self.window, color=(255, 0, 0), title='Test')
+        self.window.update()
+        cp._update_color_rgb()
+        self.window.update()
+        cp._update_color_hexa()
+        self.window.update()
+        cp._update_color_hsv()
+        self.window.update()
+        self.assertEqual(cp.get_color(), "")
+        self.window.update()
+        cp.ok()
+        self.assertEqual(cp.get_color(),
+                         ((255, 0, 0), (0, 100, 100), "#FF0000"))
         self.window.update()
 
     def test_colorpicker_staticmethods(self):
@@ -185,7 +418,11 @@ class TestColorPicker(BaseWidgetTest):
         strvar = tkc.tk.StringVar(cp, -2)
         self.window.update()
         self.assertEqual(cp.get_hue_value(strvar), 0)
+        self.window.update()
+        strvar.set(-2)
         self.assertEqual(cp.get_sv_value(strvar), 0)
+        self.window.update()
+        strvar.set(-2)
         self.assertEqual(cp.get_color_value(strvar), 0)
         self.window.update()
         strvar.set(50)
@@ -201,3 +438,13 @@ class TestColorPicker(BaseWidgetTest):
         self.assertEqual(cp.get_sv_value(strvar), 100)
         self.assertEqual(strvar.get(), '100')
         self.window.update()
+        strvar.set('q')
+        self.assertEqual(cp.get_sv_value(strvar), 0)
+        self.window.update()
+        strvar.set('q')
+        self.assertEqual(cp.get_hue_value(strvar), 0)
+        self.window.update()
+        strvar.set('q')
+        self.assertEqual(cp.get_color_value(strvar), 0)
+        self.window.update()
+

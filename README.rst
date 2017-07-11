@@ -27,7 +27,7 @@ With pip:
 Documentation
 -------------
 
-askcolor(color="red", parent=None, title=_("Color Chooser")):
+askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
 
     Display the color picker dialog and return the selected color in
     rgb and html format. (None, None) is returned if the color
@@ -40,6 +40,8 @@ askcolor(color="red", parent=None, title=_("Color Chooser")):
         - tkinter color names (see http://wiki.tcl.tk/37701 for a list)
     * parent: parent window
     * title: title of the color picker dialog
+    * alpha: alpha channel support (boolean)
+
 
 Example
 -------
