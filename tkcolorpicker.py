@@ -617,9 +617,10 @@ class ColorPicker(tk.Toplevel):
             else:
                 col = self.winfo_rgb(color)
                 self._old_color = tuple(round2(c * 255 / 65535) for c in col)
+                args = self._old_color
                 if alpha:
                     self._old_alpha = 255
-                args = self._old_color + (255,)
+                    args = self._old_color + (255,)
                 old_color = rgb_to_hexa(*args)
         else:
             self._old_color = color[:3]
@@ -755,9 +756,9 @@ class ColorPicker(tk.Toplevel):
         hexa_frame = Frame(col_frame)
         hexa_frame.pack(fill="x")
         self.hexa = Entry(hexa_frame, justify="center", width=10)
-        self.hexa.insert(0, old_color)
-        Label(hexa_frame, text="HTML").pack(side="left", padx=4, pady=4)
-        self.hexa.pack(side="left", padx=6, pady=(4, 0), fill='x', expand=True)
+        self.hexa.insert(0, old_color.upper())
+        Label(hexa_frame, text="HTML").pack(side="left", padx=4, pady=(4, 1))
+        self.hexa.pack(side="left", padx=6, pady=(4, 1), fill='x', expand=True)
 
         # --- alpha
         if alpha:
@@ -1017,6 +1018,8 @@ class ColorPicker(tk.Toplevel):
     def _update_color_hexa(self, event=None):
         """Update display after a change in the HEX entry."""
         color = self.hexa.get().upper()
+        self.hexa.delete(0, 'end')
+        self.hexa.insert(0, color)
         if re.match(r"^#[0-9A-F]{6}$", color):
             r, g, b = hexa_to_rgb(color)
             self.red.set(r)
