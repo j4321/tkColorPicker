@@ -161,12 +161,6 @@ class TestColorSquare(BaseWidgetTest):
         event.x = cs.winfo_width()
         cs._on_move(event)
         self.assertEqual(cs.get(), ((255, 0, 0), (0, 100, 100), '#FF0000'))
-#        cs.event_generate('<1>', x=10, y=50)
-#        self.window.update()
-#        cs.event_generate('<B1-Motion>', x=20, y=50)
-#        self.window.update()
-#        cs.event_generate('<Configure>')
-#        self.window.update()
 
     def test_colorsquare_functions(self):
         cs = tkc.ColorSquare(self.window, hue=60, height=200, width=200)
@@ -212,6 +206,13 @@ class TestAlphaBar(BaseWidgetTest):
         ab.destroy()
         self.window.update()
         var = tk.IntVar(self.window)
+        ab = tkc.AlphaBar(self.window, alpha=200, color=(255, 255, 2),
+                          height=12, width=200, variable=var)
+        ab.pack()
+        self.window.update()
+        ab.destroy()
+        self.window.update()
+        var = tk.StringVar(self.window, 'a')
         ab = tkc.AlphaBar(self.window, alpha=200, color=(255, 255, 2),
                           height=12, width=200, variable=var)
         ab.pack()
@@ -273,6 +274,13 @@ class TestGradientBar(BaseWidgetTest):
         gb.destroy()
         self.window.update()
         var = tk.IntVar(self.window)
+        gb = tkc.GradientBar(self.window, hue=20, height=12, width=200,
+                             variable=var)
+        gb.pack()
+        self.window.update()
+        gb.destroy()
+        self.window.update()
+        var = tk.StringVar(self.window, 'b')
         gb = tkc.GradientBar(self.window, hue=20, height=12, width=200,
                              variable=var)
         gb.pack()
@@ -415,10 +423,15 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
 
         cp.color_preview.focus_set()
+        self.window.update()
         cp._unfocus(event)
+        self.window.update()
         self.assertEqual(cp.focus_get(), cp)
         cp.hexa.focus_set()
+        self.window.update()
+        self.assertEqual(cp.focus_get(), cp.hexa)
         cp._unfocus(event)
+        self.window.update()
         self.assertNotEqual(cp.focus_get(), cp)
         self.window.update()
 

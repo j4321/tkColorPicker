@@ -181,12 +181,12 @@ class ColorPicker(tk.Toplevel):
 #        self.saturation = tk.StringVar(self)
 #        self.value = tk.StringVar(self)
 
-        s_h = Spinbox(hsv_frame, from_=0, to=360, width=4,
+        s_h = Spinbox(hsv_frame, from_=0, to=360, width=4, name='spinbox',
                       textvariable=self.hue, command=self._update_color_hsv)
         s_s = Spinbox(hsv_frame, from_=0, to=100, width=4,
-                      textvariable=self.saturation,
+                      textvariable=self.saturation, name='spinbox',
                       command=self._update_color_hsv)
-        s_v = Spinbox(hsv_frame, from_=0, to=100, width=4,
+        s_v = Spinbox(hsv_frame, from_=0, to=100, width=4, name='spinbox',
                       textvariable=self.value, command=self._update_color_hsv)
         h, s, v = rgb_to_hsv(*self._old_color)
         s_h.delete(0, 'end')
@@ -216,11 +216,11 @@ class ColorPicker(tk.Toplevel):
         self.green = LimitVar(0, 255, self)
         self.blue = LimitVar(0, 255, self)
 
-        s_red = Spinbox(rgb_frame, from_=0, to=255, width=4,
+        s_red = Spinbox(rgb_frame, from_=0, to=255, width=4, name='spinbox',
                         textvariable=self.red, command=self._update_color_rgb)
-        s_green = Spinbox(rgb_frame, from_=0, to=255, width=4,
+        s_green = Spinbox(rgb_frame, from_=0, to=255, width=4, name='spinbox',
                           textvariable=self.green, command=self._update_color_rgb)
-        s_blue = Spinbox(rgb_frame, from_=0, to=255, width=4,
+        s_blue = Spinbox(rgb_frame, from_=0, to=255, width=4, name='spinbox',
                          textvariable=self.blue, command=self._update_color_rgb)
         s_red.delete(0, 'end')
         s_red.insert(0, self._old_color[0])
@@ -240,7 +240,7 @@ class ColorPicker(tk.Toplevel):
         # --- hexa
         hexa_frame = ttk.Frame(col_frame)
         hexa_frame.pack(fill="x")
-        self.hexa = ttk.Entry(hexa_frame, justify="center", width=10)
+        self.hexa = ttk.Entry(hexa_frame, justify="center", width=10, name='entry')
         self.hexa.insert(0, old_color.upper())
         ttk.Label(hexa_frame, text="HTML").pack(side="left", padx=4, pady=(4, 1))
         self.hexa.pack(side="left", padx=6, pady=(4, 1), fill='x', expand=True)

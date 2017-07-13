@@ -1,6 +1,7 @@
 build
 dist
 cover
+cover2
 .coverage
 __pycache__
 .spyproject/
