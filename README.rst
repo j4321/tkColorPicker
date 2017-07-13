@@ -36,7 +36,8 @@ askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
     (None, None) is returned if the color selection is cancelled.
 
     Arguments:
-        * color: initially selected color, supported formats
+        * color: initially selected color, 
+          supported formats
             - RGB(A)
             - #RRGGBB(AA) 
             - tkinter color name (see http://wiki.tcl.tk/37701 for a list)
