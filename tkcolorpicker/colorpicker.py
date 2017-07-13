@@ -447,9 +447,9 @@ class ColorPicker(tk.Toplevel):
             self.bar.set(h)
             self.square.set_hsv((h, s, v))
             if self.alpha_channel:
-                self.alpha.set(255)
-                self.hexa.insert('end', 'FF')
-                self.alphabar.set_color((r, g, b, 255))
+                a = self.alpha.get()
+                self.hexa.insert('end', ("%2.2x" % a).upper())
+                self.alphabar.set_color((r, g, b, a))
         elif self.alpha_channel and re.match(r"^#[0-9A-F]{8}$", color):
             r, g, b, a = hexa_to_rgb(color)
             self.red.set(r)
