@@ -6,6 +6,9 @@ Changelog
 ---------
 
 - tkcolorpicker 2.1.1
+    * Fix setup.py
+
+- tkcolorpicker 2.1.1
     * Fix packaging error
 
 - tkcolorpicker 2.1.0
