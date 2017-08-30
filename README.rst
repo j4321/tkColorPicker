@@ -27,14 +27,19 @@ With pip:
 Documentation
 -------------
 
-askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
+Syntax:
 
-    Display the color picker dialog and return the selected color in
-    rgb and html format. (None, None) is returned if the color
-    selection is cancelled.
+::
+    askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False)
 
-    * color: initially selected color,
-      the following formats are supported
+
+Display the color picker dialog and return the selected color in
+rgb and html format. (None, None) is returned if the color
+selection is cancelled.
+
+Options:
+
+    * color: initially selected color, the following formats are supported
         - RGB (0-255 values)
         - HTML (6-digits)
         - tkinter color names (see http://wiki.tcl.tk/37701 for a list)
