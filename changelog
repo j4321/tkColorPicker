@@ -5,8 +5,12 @@ Copyright 2016-2017 Juliette Monsel <j_4321@protonmail.com>
 Changelog
 ---------
 
+- tkcolorpicker 2.1.1
+    * Fix packaging error
+
 - tkcolorpicker 2.1.0
     * Add optional alpha channel support
+    * Reorganized module in a package containing one module for each GUI element
     
 - tkcolorpicker 2.0.0
     * Make package name lowercase to follow PEP 8 guidelines

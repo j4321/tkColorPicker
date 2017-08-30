@@ -5,7 +5,8 @@ Color picker dialog for Tkinter.
 
 This module contains a `ColorPicker` class which implements the color picker
 and an `askcolor` function that displays the color picker and
-returns the chosen color in rgb and html formats.
+returns the chosen color in RGB and HTML formats.
+
 
 Requirements
 ------------
@@ -30,22 +31,22 @@ Documentation
 Syntax:
 
 ::
-    askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False)
 
+    askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
 
-Display the color picker dialog and return the selected color in
-rgb and html format. (None, None) is returned if the color
-selection is cancelled.
+Open a ColorPicker dialog and return the chosen color.
 
-Options:
+The selected color is returned as a tuple (RGB(A), #RRGGBB(AA))
+(None, None) is returned if the color selection is cancelled.
 
-    * color: initially selected color, the following formats are supported
-        - RGB (0-255 values)
-        - HTML (6-digits)
-        - tkinter color names (see http://wiki.tcl.tk/37701 for a list)
+Arguments:
+    * color: initially selected color, supported formats:
+        - RGB(A)
+        - #RRGGBB(AA) 
+        - tkinter color name (see http://wiki.tcl.tk/37701 for a list)
     * parent: parent window
-    * title: title of the color picker dialog
-    * alpha: alpha channel support (boolean)
+    * title: dialog title
+    * alpha: alpha channel suppport
 
 
 Example
@@ -63,7 +64,3 @@ Example
 
     print(askcolor((255, 255, 0), root))
     root.mainloop()
-
-
-
-
