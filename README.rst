@@ -32,7 +32,7 @@ Syntax:
 
 ::
 
-    askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
+    askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False)
 
 Open a ColorPicker dialog and return the chosen color.
 
