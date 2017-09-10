@@ -18,11 +18,25 @@ Requirements
 Installation
 ------------
 
-With pip:
+- Ubuntu: use the PPA `ppa:j-4321-i/ppa`
 
-::
+    ::
 
-    $ pip install tkcolorpicker
+        $ sudo add-apt-repository ppa:j-4321-i/ppa
+        $ sudo apt-get update
+        $ sudo apt-get install python(3)-tkcolorpicker
+
+
+- Archlinux: 
+    
+    the package is available on `AUR <https://aur.archlinux.org/packages/python-tkcolorpicker>`__
+
+
+- With pip:
+
+    ::
+
+        $ pip install tkcolorpicker
 
 
 Documentation
