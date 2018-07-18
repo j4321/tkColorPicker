@@ -98,7 +98,6 @@ class Spinbox(tk.Spinbox):
 
     def focusout(self, event):
         """Change style on focus out events."""
-        print(1)
         bc = self.style.lookup("TEntry", "bordercolor", ("!focus",))
         dc = self.style.lookup("TEntry", "darkcolor", ("!focus",))
         lc = self.style.lookup("TEntry", "lightcolor", ("!focus",))
@@ -107,7 +106,6 @@ class Spinbox(tk.Spinbox):
 
     def focusin(self, event):
         """Change style on focus in events."""
-        print(2)
         self.old_value = self.get()
         bc = self.style.lookup("TEntry", "bordercolor", ("focus",))
         dc = self.style.lookup("TEntry", "darkcolor", ("focus",))
