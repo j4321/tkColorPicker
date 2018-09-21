@@ -1,6 +1,8 @@
 tkcolorpicker
 =============
 
+|Release| |Travis| |Appveyor| |Codecov| |Windows| |Linux| |Mac| |License|
+
 Color picker dialog for Tkinter.
 
 This module contains a `ColorPicker` class which implements the color picker
@@ -81,3 +83,26 @@ Example
 
     print(askcolor((255, 255, 0), root))
     root.mainloop()
+
+
+.. |Release| image:: https://badge.fury.io/py/tkcolorpicker.svg
+    :alt: Latest Release
+.. _Release:  https://pypi.org/project/tkcolorpicker/
+.. |Linux| image:: https://img.shields.io/badge/platform-Linux-blue.svg
+    :alt: Platform
+.. |Windows| image:: https://img.shields.io/badge/platform-Windows-blue.svg
+    :alt: Platform
+.. |Mac| image:: https://img.shields.io/badge/platform-Mac-blue.svg
+    :alt: Platform
+.. |Travis| image:: https://travis-ci.org/j4321/tkColorPicker.svg?branch=master
+    :target: https://travis-ci.org/j4321/tkColorPicker
+    :alt: Travis CI Build Status
+.. |Appveyor| image:: https://ci.appveyor.com/api/projects/status/7ow8wfw5by7uiise/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/j4321/tkcolorpicker/branch/master
+    :alt: Appveyor Build Status
+.. |Codecov| image:: https://codecov.io/gh/j4321/tkColorPicker/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/j4321/tkColorPicker
+    :alt: Code coverage
+.. |License| image:: https://img.shields.io/github/license/j4321/tkColorPicker.svg
+    :target: https://www.gnu.org/licenses/gpl-3.0.en.html
+    :alt: License
