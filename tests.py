@@ -446,6 +446,19 @@ class TestColorPicker(BaseWidgetTest):
         self.window.update()
         self.assertEqual(cp.square.get(), ((0, 255, 0), (120, 100, 100), '#00FF00'))
 
+        cp.hexa.focus_set()
+        self.window.update()
+        self.assertFalse(cp.hexa.selection_present())
+        cp.hexa.event_generate('<Control-a>')
+        self.assertEqual(cp.hexa.selection_get(), cp.hexa.get())
+
+        s = tk.Spinbox(self.window, from_=0, to=100)
+        s.insert(0, '20')
+        s.pack()
+        s.focus_set()
+        cp._select_all_spinbox(TestEvent(widget=s))
+        self.assertEqual(s.selection_get(), s.get())
+
     def test_colorpicker_functions(self):
         # with alpha
         cp = tkc.ColorPicker(self.window, color=(255, 0, 0, 100), title='Test',
