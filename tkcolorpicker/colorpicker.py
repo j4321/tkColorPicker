@@ -39,9 +39,12 @@ FR = {"Red": "Rouge", "Green": "Vert", "Blue": "Bleu",
       "Cancel": "Annuler", "Color Chooser": "Sélecteur de couleur",
       "Alpha": "Alpha"}
 
-if getdefaultlocale()[0][:2] == 'fr':
-    TR = FR
-else:
+try:
+    if getdefaultlocale()[0][:2] == 'fr':
+        TR = FR
+    else:
+        TR = EN
+except ValueError:
     TR = EN
 
 
@@ -177,9 +180,6 @@ class ColorPicker(tk.Toplevel):
         self.hue = LimitVar(0, 360, self)
         self.saturation = LimitVar(0, 100, self)
         self.value = LimitVar(0, 100, self)
-#        self.hue = tk.StringVar(self)
-#        self.saturation = tk.StringVar(self)
-#        self.value = tk.StringVar(self)
 
         s_h = Spinbox(hsv_frame, from_=0, to=360, width=4, name='spinbox',
                       textvariable=self.hue, command=self._update_color_hsv)
@@ -209,9 +209,6 @@ class ColorPicker(tk.Toplevel):
         rgb_frame = ttk.Frame(col_frame, relief="ridge", borderwidth=2)
         rgb_frame.pack(pady=4, fill="x")
         rgb_frame.columnconfigure(0, weight=1)
-#        self.red = tk.StringVar(self)
-#        self.green = tk.StringVar(self)
-#        self.blue = tk.StringVar(self)
         self.red = LimitVar(0, 255, self)
         self.green = LimitVar(0, 255, self)
         self.blue = LimitVar(0, 255, self)
@@ -249,7 +246,6 @@ class ColorPicker(tk.Toplevel):
         if alpha:
             alpha_frame = ttk.Frame(self)
             alpha_frame.columnconfigure(1, weight=1)
-#            self.alpha = tk.StringVar(self)
             self.alpha = LimitVar(0, 255, self)
             alphabar = ttk.Frame(alpha_frame, borderwidth=2, relief='groove')
             self.alphabar = AlphaBar(alphabar, alpha=self._old_alpha, width=200,
@@ -296,17 +292,25 @@ class ColorPicker(tk.Toplevel):
         s_red.bind('<Return>', self._update_color_rgb)
         s_green.bind('<Return>', self._update_color_rgb)
         s_blue.bind('<Return>', self._update_color_rgb)
+        s_red.bind('<Control-a>', self._select_all_spinbox)
+        s_green.bind('<Control-a>', self._select_all_spinbox)
+        s_blue.bind('<Control-a>', self._select_all_spinbox)
         s_h.bind('<FocusOut>', self._update_color_hsv)
         s_s.bind('<FocusOut>', self._update_color_hsv)
         s_v.bind('<FocusOut>', self._update_color_hsv)
         s_h.bind('<Return>', self._update_color_hsv)
         s_s.bind('<Return>', self._update_color_hsv)
         s_v.bind('<Return>', self._update_color_hsv)
+        s_h.bind('<Control-a>', self._select_all_spinbox)
+        s_s.bind('<Control-a>', self._select_all_spinbox)
+        s_v.bind('<Control-a>', self._select_all_spinbox)
         if alpha:
             s_alpha.bind('<Return>', self._update_alpha)
             s_alpha.bind('<FocusOut>', self._update_alpha)
+            s_alpha.bind('<Control-a>', self._select_all_spinbox)
         self.hexa.bind("<FocusOut>", self._update_color_hexa)
         self.hexa.bind("<Return>", self._update_color_hexa)
+        self.hexa.bind("<Control-a>", self._select_all_entry)
 
         self.wait_visibility()
         self.lift()
@@ -315,6 +319,18 @@ class ColorPicker(tk.Toplevel):
     def get_color(self):
         """Return selected color, return an empty string if no color is selected."""
         return self.color
+
+    @staticmethod
+    def _select_all_spinbox(event):
+        """Select all entry content."""
+        event.widget.selection('range', 0, 'end')
+        return "break"
+
+    @staticmethod
+    def _select_all_entry(event):
+        """Select all entry content."""
+        event.widget.selection_range(0, 'end')
+        return "break"
 
     def _unfocus(self, event):
         """Unfocus palette items when click on bar or square."""
@@ -368,7 +384,6 @@ class ColorPicker(tk.Toplevel):
         args = (r, g, b)
         if self.alpha_channel:
             a = self.alpha.get()
-#            a = self.get_color_value(self.alpha)
             args += (a,)
             self.alphabar.set_color(args)
         color = rgb_to_hexa(*args)
