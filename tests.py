@@ -557,11 +557,18 @@ class TestColorPicker(BaseWidgetTest):
 
     def test_askcolor(self):
 
+        def test(event):
+            event.widget.ok()
+            self.assertEqual(event.widget.color[-1], '#FF0000')
+
         def events():
             self.window.update()
             c = list(self.window.children.values())[0]
-            c.ok()
-            self.assertEqual(c.color[-1], '#FF0000')
+            c.bind('<Visibility>', test)
+            self.window.update()
+            c.withdraw()
+            self.window.update()
+            c.deiconify()
 
         self.window.after(100, events)
         tkc.askcolor(parent=self.window)
