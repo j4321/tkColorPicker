@@ -5,8 +5,8 @@ tkcolorpicker
 
 Color picker dialog for Tkinter.
 
-This module contains a `ColorPicker` class which implements the color picker
-and an `askcolor` function that displays the color picker and
+This module contains a ``ColorPicker`` class which implements the color picker
+and an ``askcolor`` function that displays the color picker and
 returns the chosen color in RGB and HTML formats.
 
 
@@ -14,7 +14,7 @@ Requirements
 ------------
 
 - Linux, Windows, Mac
-- Python 2.7 or 3.x with tkinter + ttk (default for Windows but not for Linux)
+- Python 2.7 or 3.x with tkinter + ttk (default for Windows but not for Linux) and Pillow
 
 
 Installation

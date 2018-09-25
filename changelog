@@ -5,6 +5,10 @@ Copyright 2016-2017 Juliette Monsel <j_4321@protonmail.com>
 Changelog
 ---------
 
+- tkcolorpicker 2.1.3
+    * Add selection on Ctrl-A in entry and spinboxes
+    * Improve spinbox style compliance
+    
 - tkcolorpicker 2.1.2
     * Fix setup.py
 
