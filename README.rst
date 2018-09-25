@@ -20,7 +20,7 @@ Requirements
 Installation
 ------------
 
-- Ubuntu: use the PPA `ppa:j-4321-i/ppa`
+- Ubuntu: use the PPA `ppa:j-4321-i/ppa <https://launchpad.net/~j-4321-i/+archive/ubuntu/ppa>`__
 
     ::
 
