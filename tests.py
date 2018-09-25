@@ -554,3 +554,14 @@ class TestColorPicker(BaseWidgetTest):
         self.assertEqual(cp.get_color(),
                          ((255, 0, 0), (0, 100, 100), "#FF0000"))
         self.window.update()
+
+    def test_askcolor(self):
+
+        def events():
+            self.window.update()
+            c = list(self.window.children.values())[0]
+            c.ok()
+            self.assertEqual(c.color[-1], '#FF0000')
+
+        self.window.after(100, events)
+        tkc.askcolor(parent=self.window)
