@@ -87,7 +87,7 @@ Example
 
 .. |Release| image:: https://badge.fury.io/py/tkcolorpicker.svg
     :alt: Latest Release
-.. _Release:  https://pypi.org/project/tkcolorpicker/
+    :target:  https://pypi.org/project/tkcolorpicker/
 .. |Linux| image:: https://img.shields.io/badge/platform-Linux-blue.svg
     :alt: Platform
 .. |Windows| image:: https://img.shields.io/badge/platform-Windows-blue.svg
