@@ -14,7 +14,12 @@ Requirements
 ------------
 
 - Linux, Windows, Mac
-- Python 2.7 or 3.x with tkinter + ttk (default for Windows but not for Linux) and Pillow
+- Python 2.7 or 3.x
+
+And the python packages:
+
+- tkinter (included in the python distribution for Windows)
+- `Pillow <https://pypi.org/project/Pillow/>`_
 
 
 Installation
