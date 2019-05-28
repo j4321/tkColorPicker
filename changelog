@@ -1,6 +1,6 @@
 tkcolorpicker - Color picker dialog for Tkinter
 ===============================================
-Copyright 2016-2017 Juliette Monsel <j_4321@protonmail.com>
+Copyright 2016-2019 Juliette Monsel <j_4321@protonmail.com>
 
 Changelog
 ---------
@@ -8,9 +8,10 @@ Changelog
 - tkcolorpicker 2.1.3
     * Add selection on Ctrl-A in entry and spinboxes
     * Improve spinbox style compliance
+    * Fix requirements in setup.py
     
 - tkcolorpicker 2.1.2
-    * Fix setup.py
+    * Fix version in setup.py
 
 - tkcolorpicker 2.1.1
     * Fix packaging error
