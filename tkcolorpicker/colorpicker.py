@@ -85,7 +85,7 @@ class ColorPicker(tk.Toplevel):
         if palette is not None:
             # fill palette up to 12 colors
             colorcycle = itertools.cycle(palette)
-            self.palette = [next(colorcycle) for _ in range(12)]
+            self.palette = [next(colorcycle) for i in range(12)]
         else:
             self.palette = PALETTE
 
