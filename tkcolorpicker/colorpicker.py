@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Colorpicker dialog
 """
 
-
 from PIL import ImageTk
 from tkcolorpicker.functions import tk, ttk, round2, create_checkered_image, \
     overlay, PALETTE, hsv_to_rgb, hexa_to_rgb, rgb_to_hexa, col2hue, rgb_to_hsv
@@ -30,6 +29,7 @@ from tkcolorpicker.spinbox import Spinbox
 from tkcolorpicker.limitvar import LimitVar
 from locale import getdefaultlocale
 import re
+import itertools
 
 
 # --- Translation
@@ -57,7 +57,7 @@ class ColorPicker(tk.Toplevel):
     """Color picker dialog."""
 
     def __init__(self, parent=None, color=(255, 0, 0), alpha=False,
-                 title=_("Color Chooser")):
+                 title=_("Color Chooser"), palette=None):
         """
         Create a ColorPicker dialog.
 
@@ -66,6 +66,7 @@ class ColorPicker(tk.Toplevel):
             * color: initially selected color in rgb or hexa format
             * alpha: alpha channel support (boolean)
             * title: dialog title
+            * palette: list of predefined colors to chose from
         """
         tk.Toplevel.__init__(self, parent)
 
@@ -80,6 +81,13 @@ class ColorPicker(tk.Toplevel):
         style.map("palette.TFrame", relief=[('focus', 'sunken')],
                   bordercolor=[('focus', "#4D4D4D")])
         self.configure(background=style.lookup("TFrame", "background"))
+
+        if palette is not None:
+            # fill palette up to 12 colors
+            colorcycle = itertools.cycle(palette)
+            self.palette = [next(colorcycle) for i in range(12)]
+        else:
+            self.palette = PALETTE
 
         if isinstance(color, str):
             if re.match(r"^#[0-9A-F]{8}$", color.upper()):
@@ -163,7 +171,7 @@ class ColorPicker(tk.Toplevel):
         # --- palette
         palette = ttk.Frame(frame)
         palette.grid(row=0, column=1, rowspan=2, sticky="ne")
-        for i, col in enumerate(PALETTE):
+        for i, col in enumerate(self.palette):
             f = ttk.Frame(palette, borderwidth=1, relief="raised",
                           style="palette.TFrame")
             l = tk.Label(f, background=col, width=2, height=1)
@@ -543,7 +551,7 @@ class ColorPicker(tk.Toplevel):
         self.destroy()
 
 
-def askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
+def askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False, palette=None):
     """
     Open a ColorPicker dialog and return the chosen color.
 
@@ -555,8 +563,9 @@ def askcolor(color="red", parent=None, title=_("Color Chooser"), alpha=False):
         * parent: parent window
         * title: dialog title
         * alpha: alpha channel suppport
+        * palette: list of predefined colors to chose from
     """
-    col = ColorPicker(parent, color, alpha, title)
+    col = ColorPicker(parent, color, alpha, title, palette)
     col.wait_window(col)
     res = col.get_color()
     if res:
