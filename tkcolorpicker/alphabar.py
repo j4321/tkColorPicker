@@ -21,8 +21,8 @@ Alpha channel gradient bar
 
 
 from PIL import Image, ImageTk
-from tkcolorpicker.functions import tk, round2, rgb_to_hsv
-from tkcolorpicker.functions import create_checkered_image
+from .functions import tk, round2, rgb_to_hsv
+from .functions import create_checkered_image
 
 
 class AlphaBar(tk.Canvas):

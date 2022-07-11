@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from tkcolorpicker.colorpicker import ColorPicker, askcolor
-from tkcolorpicker.alphabar import AlphaBar
-from tkcolorpicker.gradientbar import GradientBar
-from tkcolorpicker.colorsquare import ColorSquare
+from .colorpicker import ColorPicker, askcolor
+from .alphabar import AlphaBar
+from .gradientbar import GradientBar
+from .colorsquare import ColorSquare

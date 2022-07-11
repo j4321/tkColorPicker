@@ -21,13 +21,13 @@ Colorpicker dialog
 
 
 from PIL import ImageTk
-from tkcolorpicker.functions import tk, ttk, round2, create_checkered_image, \
+from .functions import tk, ttk, round2, create_checkered_image, \
     overlay, PALETTE, hsv_to_rgb, hexa_to_rgb, rgb_to_hexa, col2hue, rgb_to_hsv
-from tkcolorpicker.alphabar import AlphaBar
-from tkcolorpicker.gradientbar import GradientBar
-from tkcolorpicker.colorsquare import ColorSquare
-from tkcolorpicker.spinbox import Spinbox
-from tkcolorpicker.limitvar import LimitVar
+from .alphabar import AlphaBar
+from .gradientbar import GradientBar
+from .colorsquare import ColorSquare
+from .spinbox import Spinbox
+from .limitvar import LimitVar
 from locale import getdefaultlocale
 import re
 

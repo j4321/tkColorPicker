@@ -20,7 +20,7 @@ HSV gradient bar
 """
 
 
-from tkcolorpicker.functions import tk, round2, rgb_to_hexa, hue2col
+from .functions import tk, round2, rgb_to_hexa, hue2col
 
 
 class GradientBar(tk.Canvas):

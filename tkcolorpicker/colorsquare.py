@@ -20,7 +20,7 @@ Color square gradient with selection cross
 """
 
 
-from tkcolorpicker.functions import tk, round2, rgb_to_hexa, hue2col, rgb_to_hsv
+from .functions import tk, round2, rgb_to_hexa, hue2col, rgb_to_hsv
 
 
 class ColorSquare(tk.Canvas):

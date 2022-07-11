@@ -20,7 +20,7 @@ Nicer Spinbox than the tk.Spinbox
 """
 
 
-from tkcolorpicker.functions import tk, ttk
+from .functions import tk, ttk
 
 
 class Spinbox(tk.Spinbox):

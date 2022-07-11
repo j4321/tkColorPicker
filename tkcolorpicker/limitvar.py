@@ -20,7 +20,7 @@ Limited StringVar
 """
 
 
-from tkcolorpicker.functions import tk
+from .functions import tk
 
 
 class LimitVar(tk.StringVar):

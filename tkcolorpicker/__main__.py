@@ -20,8 +20,8 @@ Example
 """
 
 
-from tkcolorpicker.functions import tk, ttk
-from tkcolorpicker import askcolor
+from .functions import tk, ttk
+from . import askcolor
 
 
 def select_color1():
