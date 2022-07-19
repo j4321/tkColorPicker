@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Colorpicker dialog
 """
 
-
 from PIL import ImageTk
 from tkcolorpicker.functions import tk, ttk, round2, create_checkered_image, \
     overlay, PALETTE, hsv_to_rgb, hexa_to_rgb, rgb_to_hexa, col2hue, rgb_to_hsv
@@ -33,19 +32,34 @@ import re
 
 
 # --- Translation
-EN = {}
-FR = {"Red": "Rouge", "Green": "Vert", "Blue": "Bleu",
+interface_texts = {
+    'en': {
+        # 'en' dict can be left empty, in the absense of a key-strig,
+        #  the key-string itself will be used, otherwise
+        #  it can be used to customize the original interface
+        "HTML": "Hex Notation",
+        "OK": "Select",
+    },
+    'fr': {
+      "Red": "Rouge", "Green": "Vert", "Blue": "Bleu",
       "Hue": "Teinte", "Saturation": "Saturation", "Value": "Valeur",
       "Cancel": "Annuler", "Color Chooser": "Sélecteur de couleur",
-      "Alpha": "Alpha"}
-
+      "Alpha": "Alpha", "HTML": "Notation hexadécimale",
+      "OK": "Selectioner",
+    },
+    'pt': {
+      "Red": "Vermelho", "Green": "Verde", "Blue": "Azul",
+      "Hue": "Matiz", "Saturation": "Saturação", "Value": "Valor",
+      "Cancel": "Cancelar", "Color Chooser": "Sélecteur de couleur",
+      "Alpha": "Alpha", "HTML": "Notação hexadecimal",
+      "OK": "Selecionar",
+    },
+}
 try:
-    if getdefaultlocale()[0][:2] == 'fr':
-        TR = FR
-    else:
-        TR = EN
-except ValueError:
-    TR = EN
+    loc = getdefaultlocale()[0][:2]
+except (TypeError, ValueError):
+    loc = 'en'
+TR = interface_texts.get(loc, interface_texts['en'])
 
 
 def _(text):
@@ -239,7 +253,7 @@ class ColorPicker(tk.Toplevel):
         hexa_frame.pack(fill="x")
         self.hexa = ttk.Entry(hexa_frame, justify="center", width=10, name='entry')
         self.hexa.insert(0, old_color.upper())
-        ttk.Label(hexa_frame, text="HTML").pack(side="left", padx=4, pady=(4, 1))
+        ttk.Label(hexa_frame, text=_("HTML")).pack(side="left", padx=4, pady=(4, 1))
         self.hexa.pack(side="left", padx=6, pady=(4, 1), fill='x', expand=True)
 
         # --- alpha
@@ -262,7 +276,7 @@ class ColorPicker(tk.Toplevel):
 
         # --- validation
         button_frame = ttk.Frame(self)
-        ttk.Button(button_frame, text="Ok",
+        ttk.Button(button_frame, text=_("OK"), width=25,
                    command=self.ok).pack(side="right", padx=10)
         ttk.Button(button_frame, text=_("Cancel"),
                    command=self.destroy).pack(side="right", padx=10)
