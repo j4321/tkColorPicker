@@ -44,7 +44,7 @@ try:
         TR = FR
     else:
         TR = EN
-except ValueError:
+except (ValueError, TypeError):
     TR = EN
 
 
